@@ -10,3 +10,6 @@ RUN apt-get update && apt-get install -y \
 
 # launch ros package
 # CMD ["ros2", "launch", "demo_nodes_cpp", "talker_listener.launch.py"]
+
+ADD . /ros2-development
+WORKDIR /ros2-development
