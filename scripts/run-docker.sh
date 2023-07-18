@@ -1,0 +1,1 @@
+docekr build -f dockerfiles/ros-desktop.jammy.dockerfile ros2:v1 .
