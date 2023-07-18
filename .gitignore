@@ -1,6 +1,10 @@
 pnpm-lock.yaml
 node_modules
 
+# ROS
+install/
+log/
+
 devel/
 logs/
 build/
