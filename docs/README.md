@@ -43,7 +43,7 @@ sudo gpasswd -a ${USER} docker
 
 [官方 ROS 镜像](https://hub.docker.com/_/ros/)，这里推荐使用 [OSRF Docker Images](https://github.com/osrf/docker_images)，已经写好了一个 `ros-desktop.foxy.jammy.dockerfile`
 ```shell
-docker build -f dockerfiles/ros-desktop.foxy.dockerfile -t ros2:v1 .
+docker build -f dockerfiles/ros-desktop.foxy.jammy.dockerfile -t ros2:v1 .
 docker run -it ros2:v1
 ```
 
