@@ -37,7 +37,6 @@ sudo gpasswd -a ${USER} docker
 ```
 然后，执行 `sudo systemctl restart docker` ​重启守护进程。
 
-### 安装
 
 
 ### 安装ROS2
@@ -47,3 +46,30 @@ sudo gpasswd -a ${USER} docker
 docker build -f dockerfiles/ros-desktop.foxy.dockerfile -t ros2:v1 .
 docker run -it ros2:v1
 ```
+
+运行ROS小海龟
+```shell
+ros2 run turtlesim turtlesim_node
+```
+
+但是由于 docker 默认不支持图形界面，所以需要配置一下
+```shell
+sudo apt-get install x11-xserver-utils
+xhost + # 每次开机都要运行
+#输出为：access control disabled, clients can connect from any host
+```
+
+重新启动一个容器，运行如下命令， `-d` 后台运行，`-it` 交互式运行，`-v` 挂载目录，`-e` 设置环境变量
+```shell
+docker run -d -it \
+    -v /etc/localtime:/etc/localtime:ro \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e DISPLAY=unix$DISPLAY \
+    -e GDK_SCALE \
+    -e GDK_DPI_SCALE \
+    ros2:v1
+```
+
+
+## ROS 
+[教程](http://www.autolabor.com.cn/book/ROSTutorials/di-2-zhang-ros-jia-gou-she-ji.html)
