@@ -37,6 +37,9 @@ sudo gpasswd -a ${USER} docker
 ```
 然后，执行 `sudo systemctl restart docker` ​重启守护进程。
 
+### 安装
+
+
 ### 安装ROS2
 
 [官方 ROS 镜像](https://hub.docker.com/_/ros/)，这里推荐使用 [OSRF Docker Images](https://github.com/osrf/docker_images)，已经写好了一个 `ros-desktop.foxy.jammy.dockerfile`
