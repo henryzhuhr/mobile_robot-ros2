@@ -32,19 +32,10 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main
 ```
 
 3. 安装package
+设置软件源
 ```shell
-# 进入文件夹并修改ros2-latest.list文件
-cd /etc/apt/sources.list.d
-sudo vim ros2-latest.list
-
-# 打开文本后出现
-deb http://packages.ros.org/ros2/ubuntu bionic main
-# 在deb后插入[arch=amd64]
-deb [arch=amd64] http://packages.ros.org/ros2/ubuntu bionic main
-
-# 保存并关闭,然后更新
+sudo sh -c 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu bionic main" > /etc/apt/sources.list.d/ros2-latest.list'
 sudo apt update
-# 最后就可以进行安装了
 sudo apt install ros-foxy-desktop
 ```
 
@@ -59,6 +50,22 @@ ros2 run demo_nodes_cpp talker
 source /opt/ros/foxy/setup.bash
 # 运行C++ listener
 ros2 run demo_nodes_py listener
+```
+
+
+
+需要提前安装 `rosdep` 和 `colcon`
+```shell
+sudo apt install -y python3-colcon-common-extensions
+sudo apt install python3-rosdep2
+sudo rosdep init # 需要🪜
+rosdep update
+```
+
+安装 python 依赖
+```shell
+pip3 uninstall empy -y
+pip3 install empy lark numpy
 ```
 
 
@@ -118,6 +125,12 @@ docker run -d -it \
     -e GDK_DPI_SCALE \
     ros2:v1
 ```
+
+### VSCode 插件
+
+安装 [ROS](https://marketplace.visualstudio.com/items?itemName=ms-iot.vscode-ros)，调出命令 `ctrl/cmd + shift + p `
+- `ROS: Update C++ Properties`: 自动更新 `.vscode/c_cpp_properties.json` 中 C++ 配置，头文件目录等
+- `ROS: Update Python Path`: 自动更新 `.vscode/settings.json` 中 Python 包路径
 
 
 ## ROS2 基础
@@ -211,7 +224,6 @@ ROS2 将复杂的系统分解成许多模块化节点，**话题 (Topic)** 是 R
 ### ROS2 动作
 
 ## 创建 ROS 包
-
 包可以被视为 ROS2 代码的容器。如果你想安装你的代码或者与其他人共享，那么你需要把它组织成一个包。
 
 使用 CMake 或 Python 创建一个新包，并运行其可执行文件。
@@ -244,41 +256,32 @@ cd src
 ros2 pkg create --build-type ament_python  <pack_name>
 ```
 
-需要提前安装 `colcon`
-```shell
-sudo apt install -y python3-colcon-common-extensions
+
+
+安装 `rosdep` 时，如果出现网络错误，`/etc/hosts` ，添加 ip 映射
+```conf
+185.199.110.133 raw.githubusercontent.com
 ```
 
-### 编写 Python 包内容
+### 编写发布和订阅包 (Python)
 
+创建名为 `py_pubsub` 的包
 ```shell
+cd src
 ros2 pkg create --build-type ament_python py_pubsub
 ```
-
+得到如下内容
 ```shell
 package_2 # 基于 Python 的包
 ├── setup.py
 ├── package.xml
 └── package_2
     ├── __init__.py
-    ├── publisher_member_function.py
+    ├── publisher_member_function.py    # 创建该文件，发布者
+    ├── subscriber_member_function.py   # 创建该文件，订阅者
     └── ...
 ```
 <!-- http://dev.ros2.fishros.com/doc/Tutorials/Writing-A-Simple-Py-Publisher-And-Subscriber.html -->
-
-
-### 构建和运行
-
-```shell
-sudo apt install python3-rosdep2
-sudo rosdep init
-rosdep update
-```
-
-如果出现网络错误，`/etc/hosts` ，添加 ip 映射
-```conf
-185.199.110.133 raw.githubusercontent.com
-```
 
 在构建之前，在工作区的**根目录**下运行 rosdep ，以检查是否缺少依赖项:
 ```shell
@@ -299,3 +302,143 @@ ros2 run py_pubsub talker
 . install/setup.bash
 ros2 run py_pubsub listener
 ```
+
+
+### 编写发布和订阅包 (C++)
+
+创建名为 `cpp_pubsub` 的包，使用 `ament_cmake` 构建类型
+```shell
+cd src
+ros2 pkg create --build-type ament_cmake cpp_pubsub
+```
+
+编写 `src/cpp_pubsub/src/publisher_member_function.cpp` 和 `src/cpp_pubsub/src/subscriber_member_function.cpp` 文件，以及 `src/cpp_pubsub/CMakeLists.txt` 文件
+
+编译
+```shell
+colcon build --packages-select cpp_pubsub
+```
+
+两个终端分别激活环境并且运行
+```shell
+. install/setup.bash
+ros2 run cpp_pubsub talker
+```
+```shell
+. install/setup.bash
+ros2 run cpp_pubsub listener
+```
+
+
+### 编写服务和客户端包 (Python)
+
+创建名为 `py_srvcli` 的包，并且添加依赖 `rclpy` 和 `example_interfaces`
+```shell
+cd src
+ros2 pkg create py_srvcli \
+    --build-type ament_python \
+    --dependencies rclpy example_interfaces
+```
+也可以在创建时，添加包的相关信息
+```shell
+cd src
+ros2 pkg create py_srvcli \
+    --build-type ament_python \
+    --dependencies rclpy example_interfaces \
+    --description py_srvcli \
+    --maintainer-email "example_email@gmail.com" \
+    --license "Apache License 2.0"
+```
+
+在 `src/py_srvcli/py_srvcli` 目录下创建服务端文件 [`service_member_function.py`](../src/py_srvcli/py_srvcli/service_member_function.py) 和客户端文件 `client_member_function.py` 
+
+然后在 `src/py_srvcli/setup.py` 中添加入口起点
+```python
+entry_points={
+    'console_scripts':[
+      'service = py_srvcli.service_member_function:main',
+      'client = py_srvcli.client_member_function:main',
+    ],
+},
+```
+
+在根目录下构建 `py_srvcli` 包
+```shell
+colcon build --packages-select py_srvcli
+```
+
+两个终端分别激活环境并且运行
+```shell
+. install/setup.bash
+ros2 run py_srvcli service
+```
+```shell
+. install/setup.bash
+ros2 run py_srvcli client 2 3
+```
+
+### 自定义接口
+
+自定义接口文件 ( `.msg` 和 `.srv` )，并将其与 Python 和 C++ 节点一起使用
+
+创建新包 `custom_interfaces`，使用 `ament_cmake` 构建类型
+```shell
+cd src
+ros2 pkg create --build-type ament_cmake custom_interfaces
+```
+
+
+在 `custom_interfaces` 目录 (和包同级目录) 下创建 `msg` 和 `srv` 文件夹，创建 `msg/Num.msg` 和 `srv/AddTwoInts.srv`
+```shell
+cd custom_interfaces
+mkdir -p msg && mkdir -p srv
+touch msg/Num.msg && touch srv/AddTwoInts.srv
+```
+
+在 `Num.msg` 中声明其数据结构。这是自定义消息，用于传输 `num`
+```shell
+int64 num
+```
+
+在 `AddTwoInts.srv` 中声明其数据结构。这是自定义服务，用于传输 `a` 和 `b`
+```shell    
+int64 a
+int64 b
+---
+int64 sum
+```
+
+在 `CMakeLists.txt` 中添加如下内容
+```cmake
+find_package(rosidl_default_generators REQUIRED)
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/AddTwoInts.srv"
+  "msg/Num.msg"
+)
+```
+
+因为接口依赖于 `rosidl_default_generators` 来生成特定于语言的代码，所以您需要声明对它的依赖，在 `package.xml` 中添加如下内容。
+```xml
+<build_depend>rosidl_default_generators</build_depend>
+<exec_depend>rosidl_default_runtime</exec_depend>
+<member_of_group>rosidl_interface_packages</member_of_group>
+```
+
+构建 `custom_interfaces` 包
+```shell
+colcon build --packages-select custom_interfaces
+```
+然后，现在这些接口将被其他 ROS2 包发现并使用
+
+通过使用 `ros2 interface show `命令确认您的接口创建有效
+```shell
+. install/setup.bash
+ros2 interface show custom_interfaces/msg/Num
+ros2 interface show custom_interfaces/srv/AddTwoInts
+```
+
+修改 `py_pubsub` 包，添加依赖 `custom_interfaces`，并且修改 `publisher_member_function.py` 和 `subscriber_member_function.py` 文件，以及 `setup.py` 文件
+
+### 自定义参数 (python)
+
+使用 Python (rclpy) 创建并运行具有ROS参数的类。当你制作自己的 nodes 时，你有时需要添加可以从launch文件中设置的参数。

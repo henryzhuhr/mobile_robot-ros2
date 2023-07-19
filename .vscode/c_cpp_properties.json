@@ -6,7 +6,10 @@
         "limitSymbolsToIncludedHeaders": false
       },
       "includePath": [
+        "/home/ubuntu/project/ros2-development/install/custom_interfaces/include/**",
         "/opt/ros/foxy/include/**",
+        "/home/ubuntu/project/ros2-development/src/cpp_pubsub/include/**",
+        "/home/ubuntu/project/ros2-development/src/custom_interfaces/include/**",
         "/usr/include/**"
       ],
       "name": "ROS",
