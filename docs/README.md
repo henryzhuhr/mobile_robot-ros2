@@ -51,15 +51,31 @@ source /opt/ros/foxy/setup.bash
 # 运行C++ listener
 ros2 run demo_nodes_py listener
 ```
-
-
-
 需要提前安装 `rosdep` 和 `colcon`
 ```shell
 sudo apt install -y python3-colcon-common-extensions
 sudo apt install python3-rosdep2
-sudo rosdep init # 需要🪜
+sudo rosdep init # 需要🪜 
 rosdep update
+```
+
+安装 `rosdep` 时，如果出现网络错误，`/etc/hosts` ，添加 ip 映射
+```conf
+185.199.110.133 raw.githubusercontent.com
+```
+
+网不好，编辑 `/etc/ros/rosdep/sources.list.d/20-default.list` 文件，添加如下内容
+```shell
+# os-specific listings first
+yaml hhttps://mirrors.tuna.tsinghua.edu.cn/github-raw/ros/rosdistro/master/rosdep/osx-homebrew.yaml osx
+
+# generic
+yaml hhttps://mirrors.tuna.tsinghua.edu.cn/github-raw/ros/rosdistro/master/rosdep/base.yaml
+yaml hhttps://mirrors.tuna.tsinghua.edu.cn/github-raw/ros/rosdistro/master/rosdep/python.yaml
+yaml hhttps://mirrors.tuna.tsinghua.edu.cn/github-raw/ros/rosdistro/master/rosdep/ruby.yaml
+gbpdistro hhttps://mirrors.tuna.tsinghua.edu.cn/github-raw/ros/rosdistro/master/releases/fuerte.yaml fuerte
+
+# newer distributions (Groovy, Hydro, ...) must not be listed anymore, they are being fetched from the rosdistro index.yaml instead
 ```
 
 安装 python 依赖
@@ -83,23 +99,21 @@ docker version          # 查看docker版本
 ```shell
 sudo groupadd docker
 sudo gpasswd -a ${USER} docker
+groups $USER
 ```
-通过配置 `/etc/docker/daemon.json​` 的方式，将`组`或者`用户`加入docker执行组
+通过配置 `/etc/docker/daemon.json` 文件来配置 docker 镜像加速
 ```json
 {
-    "group": "docker",
-    "users": [
-        "user1",
-        "user2"
-    ]
+  "registry-mirrors": ["https://registry.docker-cn.com"]
 }
+
 ```
 然后，执行 `sudo systemctl restart docker` ​重启守护进程。
 
 
-[官方 ROS 镜像](https://hub.docker.com/_/ros/)，这里推荐使用 [OSRF Docker Images](https://github.com/osrf/docker_images)，已经写好了一个 `ros-desktop.foxy.jammy.dockerfile`
+[官方 ROS 镜像](https://hub.docker.com/_/ros/)，这里推荐使用 [OSRF Docker Images](https://github.com/osrf/docker_images)，已经写好了一个 `Dockerfile.ros-desktop.foxy.jammy`
 ```shell
-docker build -f dockerfiles/ros-desktop.foxy.jammy.dockerfile -t ros2:v1 .
+docker build -f docker/containers/Dockerfile.ros-desktop.foxy.jammy -t ros2:v1 .
 docker run -it ros2:v1
 ```
 
@@ -125,6 +139,11 @@ docker run -d -it \
     -e GDK_DPI_SCALE \
     ros2:v1
 ```
+
+### 在 Jetson Nano 上安装
+
+需要 [fclash(`cn.kingtous.fclash-1.4.1-aarch64.deb`)](https://github.com/Fclash/Fclash/releases/tag/v1.4.1)，查看[订阅](https://github.com/anaer/Sub)
+
 
 ### VSCode 插件
 
@@ -257,11 +276,6 @@ ros2 pkg create --build-type ament_python  <pack_name>
 ```
 
 
-
-安装 `rosdep` 时，如果出现网络错误，`/etc/hosts` ，添加 ip 映射
-```conf
-185.199.110.133 raw.githubusercontent.com
-```
 
 ### 编写发布和订阅包 (Python)
 

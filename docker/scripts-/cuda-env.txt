@@ -1,0 +1,9 @@
+# ------ CUDA 10.2 ------
+CUDA_VERSION=10.2
+export CUDA_HOME=/usr/local/cuda-${CUDA_VERSION}
+export PATH=$PATH:$CUDA_HOME/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_HOME/lib64
+# ------ TensorRT 8.2.1 ------
+export TENSORRT_HOME=/usr/src/tensorrt
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TENSORRT_HOME/lib
+export PATH=$PATH:$TENSORRT_HOME/bin

@@ -1,5 +1,6 @@
 pnpm-lock.yaml
 node_modules
+ros2-package/
 
 # ROS
 install/
@@ -56,4 +57,5 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
 
