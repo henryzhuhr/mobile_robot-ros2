@@ -276,7 +276,7 @@ ROS2 中的包创建使用 ament 作为其构建系统，colcon 作为其构建�
 
 工作区中包的结构如下：
 ```shell
-workspace_folder
+workspace_folder # 这里指目录下 ros
 ├── src
 │   ├── package_1 # 基于 CMake 的包
 │   │   ├── CMakeLists.txt
@@ -484,6 +484,55 @@ ros2 interface show custom_interfaces/srv/AddTwoInts
 
 
 ## 启动文件 launch
-ROS2 中提供了 launch 模块用于实现节点的批量启动。
+ROS2 中提供了 launch 模块用于实现节点的批量启动
 
-ros2 pkg create py01_launch --build-type ament_python --dependencies rclpy
+参考：https://www.wolai.com/kachex/9Cd3RkqmuNMRxu9HVB2YRz
+
+创建一个 `py_launch` 的包用于批量启动节点。并在新建的包 `py_launch` 的目录下，创建 `launch` 目录
+在 ros
+```shell
+ros2 pkg create py_launch --build-type ament_python --dependencies rclpy
+mkdir -p py_launch/launch
+```
+
+在 `py_launch/launch` 目录下创建 launch 文件
+
+**python 文件**：`py_all_nodes.launch.py`
+
+```python
+from launch import LaunchDescription
+from launch_ros.actions import Node
+    video_reader = Node(package="py_video", executable="video_reader", name="t1")
+    return LaunchDescription([video_reader,])#  可以添加多个节点
+```
+
+**xml 文件：**`py_all_nodes.launch.xml`
+```xml
+<launch>
+    <node pkg="turtlesim" exec="turtlesim_node" name="t1"/>
+    <node pkg="turtlesim" exec="turtlesim_node" name="t2"/>
+</launch>
+```
+
+**yaml 文件：**`py_all_nodes.launch.yaml`
+```yaml
+launch:
+- node:
+    pkg: "turtlesim"
+    exec: "turtlesim_node"
+    name: "t1"
+- node:
+    pkg: "turtlesim"
+    exec: "turtlesim_node"
+    name: "t2"
+```
+
+
+构建、运行
+```shell
+colcon build
+. install/setup.bash
+ros2 launch py_launch py_all_nodes.launch.py
+```
+
+

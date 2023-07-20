@@ -19,8 +19,8 @@ DATA_VOLUME=" \
 
 # parse user arguments
 
-USER_COMMAND="ros2 launch mobile_robot mobile_robot/package.yaml" 
-USER_COMMAND=""
+# USER_COMMAND="ros2 launch py_launch mobile_robot/package.yaml" 
+USER_COMMAND="bash run.sh"
 ROS_DISTRO="humble" #  , noetic, foxy, galactic, humble, iron
 
 CONTINUE_RUN_WITHOUT_CONFIRM=false
@@ -203,6 +203,7 @@ if [ $ARCH = "aarch64" ]; then
 	# /proc or /sys files aren't mountable into docker
 	cat /proc/device-tree/model > /tmp/nv_jetson_model
 
+
     # --runtime nvidia 使用nvidia-docker运行容器，nvidia 运行时会自动处理所有与NVIDIA GPU相关的设置，使容器能够使用GPU。
     # 请注意，你必须在Docker配置中预先定义运行时才能使用它。在Docker的配置文件（默认为/etc/docker/daemon.json）中，可以添加一个runtimes部分来定义运行时。例如：
     # {
@@ -221,12 +222,12 @@ if [ $ARCH = "aarch64" ]; then
     # -w 指定容器的工作目录
 	# sudo docker run --runtime nvidia -it --rm \
 	sudo docker run --runtime nvidia -it --rm \
-		--network host \
+        --network host \
 		-v /tmp/argus_socket:/tmp/argus_socket \
 		-v /etc/enctune.conf:/etc/enctune.conf \
 		-v /etc/nv_tegra_release:/etc/nv_tegra_release \
 		-v /tmp/nv_jetson_model:/tmp/nv_jetson_model  \
-        -w "/root" \
+        -w $DOCKER_ROOT \
 		$DISPLAY_DEVICE $V4L2_DEVICES \
 		$DATA_VOLUME \
 		$CONTAINER_IMAGE \

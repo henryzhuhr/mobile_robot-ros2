@@ -13,7 +13,7 @@ rsync -azv \
     --exclude=".git/" --exclude=".gitignore/" --exclude=".github/" --exclude=".idea/" \
     --exclude="package.json" --exclude="yarn.lock" --exclude="node_modules/" \
     --exclude="__pycache__/" \
-    --exclude="docs/" \
-    --exclude="build/" --exclude="install/" --exclude="log/" \
+    --exclude="docs/" --exclude="ros2-package" \
+    --exclude="ros/build/" --exclude="ros/install/" --exclude="ros/log/" \
     $SOURCE_DIR $TARGET_DIR
 
