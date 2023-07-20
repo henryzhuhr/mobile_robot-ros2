@@ -6,8 +6,8 @@ import platform
 
 def generate_launch_description():
     node_list = []
-    video_reader = Node(package="py_video", executable="video_reader", name="t1")
-    video_viewer = Node(package="py_video", executable="video_viewer", name="t1")
+    video_reader = Node(package="py_video_stream", executable="video_reader", name="t1")
+    video_viewer = Node(package="py_video_stream", executable="video_viewer", name="t1")
 
     # node_list.append(video_reader)
     # node_list.append(video_viewer)
