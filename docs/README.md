@@ -163,6 +163,11 @@ groups $USER
 bash docker/run-nano.sh # 默认 --ros humble, -y 跳过确认
 ```
 
+进入容器后，运行
+```shell
+ros2 launch <package_name> <launch_file> <launch_arguments>
+```
+
 
 ### VSCode 插件
 
@@ -475,3 +480,10 @@ ros2 interface show custom_interfaces/srv/AddTwoInts
 ### 自定义参数 (python)
 
 使用 Python (rclpy) 创建并运行具有ROS参数的类。当你制作自己的 nodes 时，你有时需要添加可以从launch文件中设置的参数。
+
+
+
+## 启动文件 launch
+ROS2 中提供了 launch 模块用于实现节点的批量启动。
+
+ros2 pkg create py01_launch --build-type ament_python --dependencies rclpy
