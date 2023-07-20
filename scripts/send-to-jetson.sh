@@ -4,8 +4,8 @@ parent_dir=$(cd "$(dirname "$PWD")"; pwd)
 project_name=${PWD##*/}
 
 
-SOURCE_DIR=$parent_dir/$project_name/*
-TARGET_DIR="nano@$IP_Jetson_nano:~/project/$project_name"
+SOURCE_DIR=$parent_dir/$project_name
+TARGET_DIR="nano@$IP_Jetson_nano:~/project/"
 
 echo " --> $SOURCE_DIR $TARGET_DIR"
 

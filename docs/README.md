@@ -95,7 +95,7 @@ systemctl enable docker # 设置开机启动
 docker version          # 查看docker版本
 ```
 
-如果是非root用户，需要将用户加入docker用户组
+如果是非 root 用户，需要将用户加入 docker 用户组
 ```shell
 sudo groupadd docker
 sudo gpasswd -a ${USER} docker
@@ -140,9 +140,28 @@ docker run -d -it \
     ros2:v1
 ```
 
-### 在 Jetson Nano 上安装
+### 在 Jetson Nano 上安装 ROS2
 
-需要 [fclash(`cn.kingtous.fclash-1.4.1-aarch64.deb`)](https://github.com/Fclash/Fclash/releases/tag/v1.4.1)，查看[订阅](https://github.com/anaer/Sub)
+Jetson Nano 安装 ROS2 只能通过 docker 安装，参考项目 [`dusty-nv/ros_deep_learning`](https://github.com/dusty-nv/ros_deep_learning)
+
+将用户加入 docker 用户组
+```shell
+sudo gpasswd -a ${USER} docker
+groups $USER
+```
+通过配置 `/etc/docker/daemon.json` 文件来配置 docker 镜像加速
+```json
+{
+  "registry-mirrors": ["https://registry.docker-cn.com"]
+}
+
+```
+然后，执行 `sudo systemctl restart docker` ​重启守护进程。
+
+安装时参考 [ROS2 版本支持](http://dev.ros2.fishros.com/doc/Releases.html)，具体镜像在 [`dusty-nv/jetson-containers`](https://github.com/dusty-nv/jetson-containers)，修改 `docker/tag.sh` 中 `CONTAINER_IMAGE` 或者在运行时指定
+```shell
+bash docker/run-nano.sh # 默认 --ros humble, -y 跳过确认
+```
 
 
 ### VSCode 插件
