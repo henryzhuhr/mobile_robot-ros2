@@ -1,10 +1,14 @@
 
-cd ros
-rm -rf build install log
-colcon build --packages-select cpp_video_streamer
-colcon build --packages-select py_launch
-source install/setup.bash
-ros2 launch py_launch run_all_nodes.launch.py
+
+
+
+
+# cd ros
+# rm -rf build install log
+# colcon build --packages-select cpp_video_streamer
+# colcon build --packages-select py_launch
+# source install/setup.bash
+# ros2 launch py_launch run_all_nodes.launch.py
 
 
 
