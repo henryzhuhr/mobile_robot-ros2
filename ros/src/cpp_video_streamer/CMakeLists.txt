@@ -22,20 +22,42 @@ find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
-find_package(OpenCV COMPONENTS core calib3d)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
+find_package(OpenCV COMPONENTS)
 if( OpenCV_FOUND )
-  message("-- OpenCV found:")
-  message("   -- version  : " ${OpenCV_VERSION})
-  message("   -- include  : " ${OpenCV_INCLUDE_DIRS})
-  message("   -- libraries: " ${OpenCV_LIBRARIES})
+  # message(" -- OpenCV found:")
+  # message("    -- version  :" ${OpenCV_VERSION})
+  # message("    -- include  :" ${OpenCV_INCLUDE_DIRS})
+  # message("    -- libraries:" ${OpenCV_LIBRARIES})
   include_directories(${OpenCV_INCLUDE_DIRS})
   link_directories(${OpenCV_LIBRARY_DIRS})
   add_definitions(${OpenCV_DEFINITIONS})
 else()
-	message("-- didn't find OpenCV on system, disabling OpenCV")
+	message(FATAL_ERROR "-- didn't find OpenCV on system, disabling OpenCV")
 endif()
-	
 
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# [Node] video_reader : 编译 链接 添加ros依赖 安装
+add_executable(video_reader 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video_reader.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/node_video_reader.cpp
+)
+target_link_libraries(video_reader ${OpenCV_LIBRARIES})
+ament_target_dependencies(video_reader rclcpp std_msgs sensor_msgs)
+install(TARGETS video_reader DESTINATION lib/${PROJECT_NAME})
+
+# [Node] video_viewer : 编译 链接 添加ros依赖 安装
+add_executable(video_viewer 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video_viewer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/node_video_viewer.cpp
+)
+target_link_libraries(video_viewer ${OpenCV_LIBRARIES})
+ament_target_dependencies(video_viewer rclcpp std_msgs sensor_msgs)
+install(TARGETS video_viewer DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

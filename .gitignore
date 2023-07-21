@@ -2,6 +2,8 @@ pnpm-lock.yaml
 node_modules
 ros2-package/
 
+.idea
+
 # ROS
 install/
 log/

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'py_video_stream'
+package_name = 'py_video_streamer'
 
 setup(
     name=package_name,
@@ -20,8 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'video_reader = py_video_stream.video_reader:main',
-            'video_viewer = py_video_stream.video_viewer:main',
+            'video_reader = py_video_streamer.video_reader:main',
+            'video_viewer = py_video_streamer.video_viewer:main',
         ],
     },
 )
