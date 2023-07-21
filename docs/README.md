@@ -605,7 +605,7 @@ ros2 run cpp_srvcli client 2 3
 
 
 
-### 自定义接口
+### 自定义接口 msg srv
 
 自定义接口文件 ( `.msg` 和 `.srv` )，并将其与 Python 和 C++ 节点一起使用
 
@@ -667,10 +667,120 @@ ros2 interface show custom_interfaces/srv/AddTwoInts
 
 修改 `py_pubsub` 包，添加依赖 `custom_interfaces`，并且修改 `publisher_member_function.py` 和 `subscriber_member_function.py` 文件，以及 `setup.py` 文件
 
-### 自定义参数 (python)
+### 自定义参数 (Python)
 
 使用 Python (rclpy) 创建并运行具有ROS参数的类。当你制作自己的 nodes 时，你有时需要添加可以从launch文件中设置的参数。
 
+### 自定义参数 (C++)
+创建并运行具有 ROS 参数的类。有时节点在运行前需要从 launch  文件中设置的参数。 
+
+创建包 `cpp_parameters`
+```shell
+cd src
+ros2 pkg create --build-type ament_cmake cpp_parameters --dependencies rclcpp
+```
+
+在包目录 `src/cpp_parameters` 下创建 `src/cpp_parameters_node.cpp`
+```cpp
+#include <rclcpp/rclcpp.hpp>
+#include <chrono>
+#include <string>
+#include <functional>
+
+using namespace std::chrono_literals;
+
+class ParametersClass : public rclcpp::Node
+{
+private:
+    std::string parameter_string_;
+    rclcpp::TimerBase::SharedPtr timer_;
+
+public:
+    ParametersClass() : Node("parameter_node")
+    {
+        // 创建我们的参数。我们的参数名为 my_parameter ，并被指定为默认值 world
+        this->declare_parameter<std::string>("my_parameter", "world");
+        // timer_ 初始化，这导致 respond 函数每秒执行一次
+        timer_ = this->create_wall_timer(1000ms, std::bind(&ParametersClass::respond, this));
+    }
+    void respond()
+    {
+        // respond 函数的第一行从节点获取参数 my_parameter ，并将其存储在 parameter_string_ 中
+        this->get_parameter("my_parameter", parameter_string_);
+        RCLCPP_INFO(this->get_logger(), "Hello %s", parameter_string_.c_str());
+    }
+};
+
+int main(int argc, char **argv)
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<ParametersClass>()); // “rclcpp:: spin” 开始处理来自节点的数据。
+    rclcpp::shutdown();
+    return 0;
+}
+```
+
+`CMakeLists.txt` 文件
+```cmake
+add_executable(parameter_node src/cpp_parameters_node.cpp)
+ament_target_dependencies(parameter_node rclcpp)
+
+install(TARGETS
+  parameter_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+```
+
+构建
+```shell
+colcon build --packages-select cpp_parameters
+```
+
+运行节点
+```shell
+source install/setup.bash
+ros2 run cpp_parameters parameter_node
+```
+另一个终端，运行节点
+```shell
+source install/setup.bash
+# 查看参数
+ros2 param list
+# 修改参数
+ros2 param set /parameter_node my_parameter earth
+```
+
+可以通过 launch 文件修改，在包目录 `cpp_parameters` 下创建 `launch/cpp_parameters_launch.py`
+```python
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package="cpp_parameters",
+            executable="parameter_node",
+            name="custom_parameter_node",
+            output="screen",
+            emulate_tty=True,
+            parameters=[
+                {"my_parameter": "earth"}
+            ]
+        )
+    ])
+```
+
+ `CMakeLists.txt` 文件添加
+```cmake
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME}
+)
+```
+运行节点
+```shell
+source install/setup.bash
+ros2 launch cpp_parameters cpp_parameters_launch.py
+```
 
 
 ## 启动文件 launch
