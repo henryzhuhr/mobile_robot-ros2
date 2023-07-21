@@ -6,12 +6,13 @@
         "limitSymbolsToIncludedHeaders": false
       },
       "includePath": [
-        "/home/ubuntu/project/ros2-development/install/custom_interfaces/include/**",
+        "/usr/local/cuda-11.4/include",
+        "/usr/include/opencv4",
         "/opt/ros/foxy/include/**",
-        "/home/ubuntu/project/ros2-development/src/cpp_pubsub/include/**",
-        "/home/ubuntu/project/ros2-development/src/custom_interfaces/include/**",
-        "/usr/include/**"
+        "/usr/include/**",
+        "ros/src/cpp_video_streamer/include"
       ],
+      "defines": ["ROS2"],
       "name": "ROS",
       "intelliSenseMode": "gcc-x64",
       "compilerPath": "/usr/bin/gcc",

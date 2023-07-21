@@ -11,11 +11,19 @@
 
 
 
-DOCKER_ROOT="/root/ros2-development"	# where the project resides inside docker
+DOCKER_ROOT="/root/mobile_robot"	# where the project resides inside docker
 
 # generate mount commands
 DATA_VOLUME=" \
---volume $PWD:$DOCKER_ROOT "
+--volume $PWD/ros:$DOCKER_ROOT "
+
+# parse user arguments
+
+# USER_COMMAND="ros2 launch py_launch mobile_robot/package.yaml" 
+USER_COMMAND="bash run.sh"
+ROS_DISTRO="humble" #  , noetic, foxy, galactic, humble, iron
+
+CONTINUE_RUN_WITHOUT_CONFIRM=false
 
 
 source docker/color.sh
@@ -62,13 +70,7 @@ show_help() {
     echo " "
 }
 
-# parse user arguments
-USER_COMMAND=""
-USER_VOLUME=""
-DEV_VOLUME=""
-ROS_DISTRO="humble" #  , noetic, foxy, galactic, humble, iron
 
-CONTINUE_RUN_WITHOUT_CONFIRM=false
 while :; do
     case $1 in
         -h|-\?|--help)
@@ -174,15 +176,13 @@ fi
 
 
 echo "${LGREEN} info summary: ${DEFAULT}"
-echo "$INFO${LGREEN}user command${DEFAULT}: ${LCYAN}$USER_COMMAND${DEFAULT}"
-echo "$INFO${LGREEN}user volume${DEFAULT}: ${LCYAN}$USER_VOLUME${DEFAULT}"
-echo "$INFO${LGREEN}dev volume${DEFAULT}: ${LCYAN}$DEV_VOLUME${DEFAULT}"
-echo "$INFO${LGREEN}data volume${DEFAULT}: ${LCYAN}$DATA_VOLUME${DEFAULT}"
-
 echo "$INFO${LGREEN}ros distro${DEFAULT}: ${LCYAN}$ROS_DISTRO${DEFAULT}"
 echo "$INFO${LGREEN}container image${DEFAULT}: ${LCYAN}$CONTAINER_IMAGE${DEFAULT}"
 echo "$INFO${LGREEN}V4L2 devices${DEFAULT}: ${LCYAN}$V4L2_DEVICES${DEFAULT}"
 echo "$INFO${LGREEN}display${DEFAULT}: ${LCYAN}$DISPLAY_DEVICE${DEFAULT}"
+
+echo "$INFO${LGREEN}data volume${DEFAULT}: ${LCYAN}$DATA_VOLUME${DEFAULT}"
+echo "$INFO${LGREEN}user command${DEFAULT}: ${LCYAN}$USER_COMMAND${DEFAULT}"
 
 #!/bin/bash
 if [ "$CONTINUE_RUN_WITHOUT_CONFIRM" = false ] ; then
@@ -203,6 +203,7 @@ if [ $ARCH = "aarch64" ]; then
 	# /proc or /sys files aren't mountable into docker
 	cat /proc/device-tree/model > /tmp/nv_jetson_model
 
+
     # --runtime nvidia 使用nvidia-docker运行容器，nvidia 运行时会自动处理所有与NVIDIA GPU相关的设置，使容器能够使用GPU。
     # 请注意，你必须在Docker配置中预先定义运行时才能使用它。在Docker的配置文件（默认为/etc/docker/daemon.json）中，可以添加一个runtimes部分来定义运行时。例如：
     # {
@@ -219,16 +220,18 @@ if [ $ARCH = "aarch64" ]; then
     # --rm 容器退出时自动清理容器内部的文件系统
     # -v 挂载目录  `-v 容器外部文件夹路径:容器内部文件夹路径`
     # -w 指定容器的工作目录
+	# sudo docker run --runtime nvidia -it --rm \
 	sudo docker run --runtime nvidia -it --rm \
-		--network host \
+        --network host \
 		-v /tmp/argus_socket:/tmp/argus_socket \
 		-v /etc/enctune.conf:/etc/enctune.conf \
 		-v /etc/nv_tegra_release:/etc/nv_tegra_release \
 		-v /tmp/nv_jetson_model:/tmp/nv_jetson_model  \
         -w $DOCKER_ROOT \
 		$DISPLAY_DEVICE $V4L2_DEVICES \
-		$DATA_VOLUME $USER_VOLUME $DEV_VOLUME \
-		$CONTAINER_IMAGE $USER_COMMAND
+		$DATA_VOLUME \
+		$CONTAINER_IMAGE \
+        $USER_COMMAND
 else
     echo "$ERROR ${LRED}This script is only for Jetson${DEFAULT}"
 fi
