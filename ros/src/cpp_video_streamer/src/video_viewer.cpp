@@ -18,5 +18,5 @@ void VideoViewer::callback(const sensor_msgs::msg::Image::SharedPtr message) con
     cv::Mat frame = cv::Mat(message->height, message->width, CV_8UC3, const_cast<unsigned char *>(message->data.data()));
     cv::imshow("video_viewer", frame);
     cv::waitKey(1);
-    RCLCPP_INFO(this->get_logger(), "Viewer frame stamp[%d.%d]", message->header.stamp.sec, message->header.stamp.nanosec);
+    // RCLCPP_INFO(this->get_logger(), "Viewer frame stamp[%d.%d]", message->header.stamp.sec, message->header.stamp.nanosec);
 }

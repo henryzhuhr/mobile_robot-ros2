@@ -1,6 +1,7 @@
 
 # https://pypi.tuna.tsinghua.edu.cn/simple/setuptools/
-pip3 install setuptools-58.2.0-py3-none-any.whl
+pip3 install resource/setuptools-58.2.0-py3-none-any.whl
+# numpy==1.20.2
 
 rm -rf install build log
 colcon build

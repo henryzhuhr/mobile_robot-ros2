@@ -60,4 +60,9 @@ target_link_libraries(video_viewer ${OpenCV_LIBRARIES})
 ament_target_dependencies(video_viewer rclcpp std_msgs sensor_msgs)
 install(TARGETS video_viewer DESTINATION lib/${PROJECT_NAME})
 
+# install launch
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME}
+)
+
 ament_package()

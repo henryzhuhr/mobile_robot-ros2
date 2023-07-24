@@ -12,14 +12,16 @@ private:
     cv::Mat frame;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr publisher_;
+    std::string parameter_string_;
 
 public:
     VideoReader();
     ~VideoReader();
 
 private:
-    void init_video_cap();
+    void init_video_cap(std::string video_source=0);
     void timer_callback();
+    
 };
 
 #endif // VIDEO_READER_H
