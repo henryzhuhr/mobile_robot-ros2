@@ -1,12 +1,12 @@
 {
     "python.autoComplete.extraPaths": [
-        "install/py_video_streamer/lib/python3.8/site-packages",
-        "install/py_launch/lib/python3.8/site-packages",
+        "install/car_controller_py/lib/python3.8/site-packages",
+        "install/vision_lanedet_interfaces/lib/python3.8/site-packages",
         "/opt/ros/foxy/lib/python3.8/site-packages"
     ],
     "python.analysis.extraPaths": [
-        "install/py_video_streamer/lib/python3.8/site-packages",
-        "install/py_launch/lib/python3.8/site-packages",
+        "install/car_controller_py/lib/python3.8/site-packages",
+        "install/vision_lanedet_interfaces/lib/python3.8/site-packages",
         "/opt/ros/foxy/lib/python3.8/site-packages"
     ],
     "files.associations": {

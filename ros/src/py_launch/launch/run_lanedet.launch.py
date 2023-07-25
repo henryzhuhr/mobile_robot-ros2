@@ -23,14 +23,28 @@ def generate_launch_description():
         name="t1",
     )
 
-    vision_lanedet_node = Node(
+    vision_lanedet_node = Node(# 「节点」 视觉 车道线检测
         package="vision_lanedet_py",
-        executable="lanedet_ros",
+        executable="lane_detector",
         name="vision_lanedet_py",
+        parameters=[{
+            "weight_file": "weights/ufld-final-x64.engine",
+            "video": "weights/test.mp4",
+            "skip_frame": 5,
+            "img_h": 720,
+            "img_w": 1280,
+        }],
+    )
+
+    car_control_node= Node(# 「节点」 车辆控制
+        package="car_controller_py",
+        executable="control_car",
+        name="car_controller_py",
     )
 
     return LaunchDescription([
         cpp_video_reader,
-        cpp_video_viewer,
+                               # cpp_video_viewer,
         vision_lanedet_node,
+        car_control_node,
     ])
