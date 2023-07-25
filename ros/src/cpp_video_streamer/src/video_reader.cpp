@@ -25,7 +25,7 @@ VideoReader::~VideoReader()
 
 void VideoReader::init_video_cap(std::string video_source)
 {
-    RCLCPP_ERROR(this->get_logger(), "Open video stream: \"%s\"", video_source.c_str());
+    RCLCPP_ERROR(this->get_logger(), "\033[01;32mOpen video stream:\033[0m \"%s\"", video_source.c_str());
     if (video_source == "camera")
     {
         bool is_open_camera = false;
@@ -35,13 +35,13 @@ void VideoReader::init_video_cap(std::string video_source)
             if (video_cap.isOpened())
             {
                 is_open_camera = true;
-                RCLCPP_INFO(this->get_logger(), "Open camera %d", i);
+                RCLCPP_INFO(this->get_logger(), "\033[01;32mOpen camera\033[0m %d", i);
                 break;
             }
         }
         if (is_open_camera == false)
         {
-            throw std::runtime_error("Could not open camera by id 0-9");
+            throw std::runtime_error("\033[01;31mCould not open camera by id 0-9\033[0m");
         }
         else
         {
@@ -64,7 +64,7 @@ void VideoReader::init_video_cap(std::string video_source)
         bool is_open = video_cap.open(video_source);
         if (is_open == false)
         {
-            throw std::runtime_error("Could not open video stream: " + video_source);
+            throw std::runtime_error("\033[01;31mCould not open video stream:\033[0m " + video_source);
         }
     }
 }
@@ -75,7 +75,7 @@ void VideoReader::timer_callback()
     if (frame.empty())
     {
         // RCLCPP_ERROR(this->get_logger(), "Could not read frame");
-        throw std::runtime_error("Could not read frame");
+        throw std::runtime_error("\033[01;31mCould not read frame\033[0m");
         return;
     }
     auto message = sensor_msgs::msg::Image();

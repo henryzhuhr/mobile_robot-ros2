@@ -20,8 +20,8 @@ setup(
     entry_points={
         'console_scripts':
             [
-                "lanedet = vision_lanedet_py.infer_trtEngine:main",
-                "lanedet_ros = vision_lanedet_py.infer_in_ros:main",
+                # "lanedet = vision_lanedet_py.infer_trtEngine:main",
+                "lane_detector = vision_lanedet_py.infer_in_ros:main",
             ],
     },
 )
