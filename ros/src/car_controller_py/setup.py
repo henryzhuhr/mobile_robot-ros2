@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            f"control_car = {package_name}.control_car:main",
+            f"auto_control_lanedet = {package_name}.auto_control_lanedet:main",
+            f"manual_control = {package_name}.manual_control:main",
         ],
     },
 )

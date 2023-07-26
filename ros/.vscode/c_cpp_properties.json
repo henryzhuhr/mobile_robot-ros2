@@ -9,6 +9,7 @@
         "/opt/ros/foxy/include/**",
         "/usr/include/**",
         "src/cpp_video_streamer/include/**",
+        "src/car_controller/include",
       ],
       "name": "ROS",
       "intelliSenseMode": "gcc-x64",

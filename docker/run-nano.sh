@@ -196,12 +196,26 @@ if [ "$CONTINUE_RUN_WITHOUT_CONFIRM" = false ] ; then
     done
 fi
 
-
+USER_DEVICE=""
 # run the container
 if [ $ARCH = "aarch64" ]; then
 
 	# /proc or /sys files aren't mountable into docker
 	cat /proc/device-tree/model > /tmp/nv_jetson_model
+
+    # 查找存在的 /dev/ttyUSB* 并挂载
+    ls /dev/ttyUSB* > /tmp/ttyUSB
+    if [ -s /tmp/ttyUSB ]; then
+        while read line
+        do
+            echo "$INFO${LGREEN}Find Serial port${DEFAULT}: $line"
+            USER_DEVICE="$USER_DEVICE --device=$line "
+        done < /tmp/ttyUSB
+        echo "$INFO${LGREEN}Add to docker command${DEFAULT}: ${USER_DEVICE}"
+    else
+        echo "$ERROR${LRED}Serial Port [ttyUSB*] not exist${DEFAULT}"
+        exit 1
+    fi
 
 
     # --runtime nvidia 使用nvidia-docker运行容器，nvidia 运行时会自动处理所有与NVIDIA GPU相关的设置，使容器能够使用GPU。
@@ -223,11 +237,13 @@ if [ $ARCH = "aarch64" ]; then
 	# sudo docker run --runtime nvidia -it --rm \
 	sudo docker run --runtime nvidia -it --rm \
         --network host \
+        --privileged=true \
 		-v /tmp/argus_socket:/tmp/argus_socket \
 		-v /etc/enctune.conf:/etc/enctune.conf \
 		-v /etc/nv_tegra_release:/etc/nv_tegra_release \
 		-v /tmp/nv_jetson_model:/tmp/nv_jetson_model  \
         -w $DOCKER_ROOT \
+        $USER_DEVICE \
 		$DISPLAY_DEVICE $V4L2_DEVICES \
 		$DATA_VOLUME \
 		$CONTAINER_IMAGE \

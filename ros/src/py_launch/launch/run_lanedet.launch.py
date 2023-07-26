@@ -38,7 +38,7 @@ def generate_launch_description():
 
     car_control_node= Node(# 「节点」 车辆控制
         package="car_controller_py",
-        executable="control_car",
+        executable="auto_control_lanedet",
         name="car_controller_py",
     )
 
