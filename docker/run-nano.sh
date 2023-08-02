@@ -213,9 +213,13 @@ if [ $ARCH = "aarch64" ]; then
         done < /tmp/ttyUSB
         echo "$INFO${LGREEN}Add to docker command${DEFAULT}: ${USER_DEVICE}"
     else
-        echo "$ERROR${LRED}Serial Port [ttyUSB*] not exist${DEFAULT}"
-        exit 1
+        echo "$WARNING${LYELLOW}Serial Port [ttyUSB*] not exist${DEFAULT}"
+        # exit 1
     fi
+
+    # 挂载 /dev/ttyTH1 串口 40pin引脚上 8/10 
+    /dev/ttyTH
+    USER_DEVICE="$USER_DEVICE --device=/dev/ttyTH1 "
 
 
     # --runtime nvidia 使用nvidia-docker运行容器，nvidia 运行时会自动处理所有与NVIDIA GPU相关的设置，使容器能够使用GPU。

@@ -11,7 +11,7 @@ cd $WORKDIR/src
 
 # -- 构建运行 --
 cd $WORKDIR
-rm -rf build install log
+# rm -rf build install log
 
 eval "$(conda shell.bash hook)"
 conda activate ros2-development
@@ -21,7 +21,7 @@ conda activate ros2-development
 # colcon build --packages-select cpp_video_streamer
 # colcon build --packages-select vision_lanedet_interfaces
 # colcon build --packages-select vision_lanedet_py
-colcon build --packages-select py_launch
+# colcon build --packages-select py_launch
 colcon build --packages-select car_controller_py
 
 

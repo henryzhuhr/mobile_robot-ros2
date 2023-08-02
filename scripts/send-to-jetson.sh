@@ -1,5 +1,4 @@
 IP_Jetson_nano="192.168.101.225"
-IP_Jetson_nano="192.168.101.231"
 
 parent_dir=$(cd "$(dirname "$PWD")"; pwd)
 project_name=${PWD##*/}
