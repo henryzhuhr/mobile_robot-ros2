@@ -1,5 +1,4 @@
-DEFAULT=$(echo -en '\033[0m')
-LGREEN=$(echo -en '\033[01;32m')
+source scripts/constant.sh
 
 USER_DEVICE=" "
 # 查找存在的 /dev/ttyUSB* 并挂载

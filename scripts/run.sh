@@ -1,23 +1,27 @@
-export WORKDIR=$PWD/ros
-echo "work dir ${WORKDIR}"
-cd $WORKDIR
+source scripts/constant.sh
+echo "${LGREEN}Find [/dev/ttyUSB] $(ls /dev/ttyUSB*)${DEFAULT}"
+echo "${LGREEN}Find [/dev/ttyTHS] $(ls /dev/ttyTHS*)${DEFAULT}"
 
+# https://pypi.tuna.tsinghua.edu.cn/simple/setuptools/
+pip3 install $public_dir/setuptools-58.2.0-py3-none-any.whl
+pip3 install $public_dir/pyserial-3.5-py2.py3-none-any.whl
+# numpy==1.20.2
 
-# -- 创建包 --
-cd $WORKDIR/src
-# ros2 pkg create --build-type ament_cmake cpp_parameters \
-#     --dependencies rclcpp
-# exit
+rm -rf install build log
 
-# -- 构建运行 --
-cd $WORKDIR
-rm -rf build install log
+source ~/.bashrc
+source /opt/ros/humble/install/setup.bash
 
-colcon build
-# colcon build --packages-select cpp_parameters
+# colcon build
+# colcon build --packages-select vision_lanedet_interfaces
+# colcon build --packages-select car_controller_py
+
+colcon build --packages-select py_launch
+colcon build --packages-select car_controller_py
+
 source install/setup.bash
-
-# ros2 run cpp_parameters parameter_node
-# ros2 launch cpp_parameters cpp_parameters_launch.py
 # ros2 launch py_launch run_all_nodes.launch.py
 
+# ros2 run car_controller_py auto_control_lanedet
+
+ros2 launch py_launch run_manul_control_car.launch.py

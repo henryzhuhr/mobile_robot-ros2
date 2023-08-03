@@ -9,5 +9,5 @@ resource/
 
 # ROS about
 build/
-isntall/
+install/
 log/
