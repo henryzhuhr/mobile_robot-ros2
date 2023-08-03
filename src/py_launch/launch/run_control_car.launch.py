@@ -13,7 +13,7 @@ def generate_launch_description():
         executable="video_reader",
         name="t1",
         parameters=[{
-            "source": "public/IMG_5281.MOV", # camera or file/url
+            "source": "camera", # camera or file/url
         }],
     )
     cpp_video_viewer = Node(

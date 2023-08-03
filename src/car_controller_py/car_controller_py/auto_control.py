@@ -44,7 +44,7 @@ class AutoController(Node):
         self.lane_detetion_subscription # prevent unused variable warning
 
         # -- 定时器 --
-        self.reset_speed_timer = self.create_timer(0.05, self.reset_speed_timer_callback)
+        self.reset_speed_timer = self.create_timer(0.1, self.reset_speed_timer_callback)
         self.reset_speed_timer
 
         # 控制锁，防止多个节点同时控制
@@ -102,7 +102,7 @@ class AutoController(Node):
         """ 车道线自动控制的回调 """
 
         if self.__lock_state == self.ControlLockState.FREE:
-            self.__lock_state = self.ControlLockState.USED
+            
             # self.get_logger().info(f"lane_result: {lane_result_msg}")
 
             y_offset = lane_result_msg.y_offset # y_offset
@@ -113,11 +113,12 @@ class AutoController(Node):
             speed_scale = 0.2 # 手动控制时建议设置一个系数，防止速度过快
 
             # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
-            set_y = self.ser_ctr.serial_frame.set_speed("x", -1 * speed_scale)
-            set_x = self.ser_ctr.serial_frame.set_speed("y", -1 * y_offset * speed_scale)
+            set_y = self.ser_ctr.serial_frame.set_speed("x", -1 * y_offset/5000. * speed_scale)
+            set_x = self.ser_ctr.serial_frame.set_speed("y", -1 * speed_scale)
             set_theta = self.ser_ctr.serial_frame.set_speed("theta", z_offset * speed_scale)
 
-            # frame, frame_list = self.ser_ctr.send_car()
+            self.__lock_state = self.ControlLockState.USED
+            frame, frame_list = self.ser_ctr.send_car()
 
             # 重置状态锁 记录上一次状态
             self.__lock_state = self.ControlLockState.FREE
