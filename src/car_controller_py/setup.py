@@ -19,9 +19,10 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': [
-            # f"auto_control_lanedet = {package_name}.auto_control_lanedet:main",
-            f"manual_control = {package_name}.manual_control:main",
-        ],
+        'console_scripts':
+            [
+                f"auto_control = {package_name}.auto_control:main",
+                f"manual_control = {package_name}.manual_control:main",
+            ],
     },
 )

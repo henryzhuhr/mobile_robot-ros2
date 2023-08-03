@@ -1,6 +1,8 @@
 source scripts/constant.sh
-echo "${LGREEN}Find [/dev/ttyUSB] $(ls /dev/ttyUSB*)${DEFAULT}"
-echo "${LGREEN}Find [/dev/ttyTHS] $(ls /dev/ttyTHS*)${DEFAULT}"
+
+echo "${LGREEN}Find [/dev/ttyUSB]: \n$(ls /dev/ttyUSB*)${DEFAULT}"
+echo "${LGREEN}Find [/dev/ttyTHS]: \n$(ls /dev/ttyTHS*)${DEFAULT}"
+echo "${LGREEN}Find [/dev/ttyACM]: \n$(ls /dev/ttyACM*)${DEFAULT}"
 
 # https://pypi.tuna.tsinghua.edu.cn/simple/setuptools/
 pip3 install $public_dir/setuptools-58.2.0-py3-none-any.whl

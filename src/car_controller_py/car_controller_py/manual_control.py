@@ -13,7 +13,7 @@ class ManualController(Node):
         super().__init__('manual_car_controller')
         self.get_logger().info("\033[01;32mCar Manual Controller Node Started\033[0m")
 
-        # -- 订阅手柄消息
+        # -- 订阅手柄消息 ( Joy 是 ROS2 内置的节点 ，读取 /dev/input/js0 )
         self.joy_subscription = self.create_subscription(Joy, 'joy', self.joy_callback, 10)
         self.joy_subscription # prevent unused variable warning
 
@@ -33,7 +33,7 @@ class ManualController(Node):
         if value_abs > 1:
             value_abs = 1
 
-        if value_abs < 1e-6: # 判断是否为 0
+        if value_abs < 1e-3: # 判断是否为 0
             value_sign = 0
             value_abs = 0
         return value_sign, value_abs
@@ -42,6 +42,7 @@ class ManualController(Node):
         """
         # ROS 内置手柄控制文档 http://wiki.ros.org/joy
         Joy 消息结构
+        ```python
         sensor_msgs.msg.Joy(
             header=std_msgs.msg.Header(
                 stamp=builtin_interfaces.msg.Time(
@@ -53,10 +54,8 @@ class ManualController(Node):
             axes=[-0.0, -0.0, -0.0, -0.0, 0.0, 0.0], 
             buttons=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         )
+        ```
         """
-        js_course_map = {1: "左", 0: "停", -1: "右"}
-        js_forwardback_map = {1: "前", 0: "停", -1: "后"}
-        js_leftright_map = {1: "左", 0: "停", -1: "右"}
         axes_value = joy_msg.axes
 
         # 摇杆(joystick): 美国手
@@ -65,12 +64,12 @@ class ManualController(Node):
         js_right_x = self.sign(axes_value[2]) # 右摇杆 x 轴 前后 forwardback
         js_right_y = self.sign(axes_value[3]) # 右摇杆 y 轴 左右 leftright
 
-        # joy_msg.header
-        # if js_right_x[0] != 0 or js_right_y[0] != 0:
-        # time.sleep(0.2)
-        set_y = self.ser_ctr.serial_frame.set_speed("x", -1 * js_right_y[0] * js_right_y[1] / 5)
-        set_x = self.ser_ctr.serial_frame.set_speed("y", js_right_x[0] * js_right_x[1] / 5)
-        set_theta = self.ser_ctr.serial_frame.set_speed("theta", js_left__x[0] * js_left__x[1] / 5)
+        
+        speed_scale = 0.2 # 手动控制时建议设置一个系数，防止速度过快
+        # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
+        set_y = self.ser_ctr.serial_frame.set_speed("x", -1 * js_right_y[0] * js_right_y[1] * speed_scale)
+        set_x = self.ser_ctr.serial_frame.set_speed("y", -1 * js_right_x[0] * js_right_x[1] * speed_scale)
+        set_theta = self.ser_ctr.serial_frame.set_speed("theta", js_left__x[0] * js_left__x[1] * speed_scale)
 
         frame, frame_list = self.ser_ctr.send_car()
         self.get_logger().info(f"{frame}"

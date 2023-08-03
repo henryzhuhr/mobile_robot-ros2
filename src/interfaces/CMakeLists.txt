@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(vision_lanedet_interfaces)
+project(interfaces)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -23,7 +23,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   # msg
-  "msg/LaneResult.msg"
+  "msg/Lanes.msg" # 车道线消息格式
 )
 
 ament_package()
