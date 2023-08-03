@@ -13,24 +13,22 @@ class AutoController(Node):
     class ControlLockState:
         """ 控制锁状态 """
         FREE = 0   # 没有线程控制
-        USED = 1  
-
+        USED = 1
 
     __lock_state = ControlLockState.FREE
+    __last_lock_state = ControlLockState.FREE
 
     def __init__(self):
         super().__init__('auto_controller')
         self.get_logger().info("\033[01;32mCar Auto Controller Node Started\033[0m")
 
         # 打开串口
-        self.serial_controller = SerialControl()
-        if self.serial_controller.serial_port is None:
+        self.ser_ctr = SerialControl()
+        if self.ser_ctr.serial_port is None:
             self.get_logger().fatal(f"\033[01;31mOpen serial failed\033[0m ")
         else:
-            self.get_logger().info(
-                f"\033[01;32mSuccessfully open serial: "
-                f"\033[0m{self.serial_controller.serial_port.name}"
-            )
+            self.get_logger().info(f"\033[01;32mSuccessfully open serial: "
+                                   f"\033[0m{self.ser_ctr.serial_port.name}")
 
         # -- 订阅手柄消息 ( Joy 是 ROS2 内置的节点 ，读取 /dev/input/js0 )
         self.joy_subscription = self.create_subscription(Joy, 'joy', self.joy_callback, 10)
@@ -45,23 +43,15 @@ class AutoController(Node):
         )
         self.lane_detetion_subscription # prevent unused variable warning
 
+        # -- 定时器 --
+        self.reset_speed_timer = self.create_timer(0.1, self.reset_speed_timer_callback)
+        self.reset_speed_timer
+
+
         # 控制锁，防止多个节点同时控制
         # 只有当手柄控制时，才能修改，优先级最高
-        self.control_lock_state = self.reset_state()
-
-    @property
-    def state(self):
-        return AutoController.__lock_state
-
-    @state.setter
-    def set_state(self, state_id: int):
-        """state_id 必须是 AutoController.ControlLockState 的枚举值"""
-        AutoController.__lock_state = state_id
-
-    @state.setter
-    def reset_state(self):
-        """state_id 必须是 AutoController.ControlLockState 的枚举值"""
-        AutoController.__lock_state = AutoController.ControlLockState.FREE
+        self.__lock_state = self.ControlLockState.FREE
+        self.__last_lock_state = self.ControlLockState.FREE
 
     def joy_callback(self, joy_msg: Joy):
         """
@@ -81,7 +71,7 @@ class AutoController(Node):
         )
         ```
         """
-        
+
         axes_value = joy_msg.axes
 
         # 摇杆(joystick): 美国手
@@ -90,44 +80,43 @@ class AutoController(Node):
         js_right_x = self.sign(axes_value[2]) # 右摇杆 x 轴 前后 forwardback
         js_right_y = self.sign(axes_value[3]) # 右摇杆 y 轴 左右 leftright
 
-        if js_right_x[1] == 0 or js_right_y[1] == 0 or js_left__x[1] == 0:
-            self.set_state(self.ControlLockState.USED)
+        if js_right_x[1] != 0 or js_right_y[1] != 0 or js_left__x[1] != 0:
+            self.__lock_state = self.ControlLockState.USED
 
             speed_scale = 0.2 # 手动控制时建议设置一个系数，防止速度过快
-                            # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
+                              # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
             set_y = self.ser_ctr.serial_frame.set_speed("x", -1 * js_right_y[0] * js_right_y[1] * speed_scale)
             set_x = self.ser_ctr.serial_frame.set_speed("y", -1 * js_right_x[0] * js_right_x[1] * speed_scale)
             set_theta = self.ser_ctr.serial_frame.set_speed("theta", js_left__x[0] * js_left__x[1] * speed_scale)
 
             frame, frame_list = self.ser_ctr.send_car()
-            self.get_logger().info(f"{frame}"
-                                f"{frame_list}"
-                                f"{axes_value}")
-            self.reset_state() # 重置状态锁
+            self.get_logger().info(f"{axes_value}")
+
+            # 重置状态锁 记录上一次状态
+            self.__lock_state = self.ControlLockState.FREE
+            self.__last_lock_state = self.ControlLockState.USED
 
     def lanedet_callback(self, lane_result_msg: Lanes):
         """ 车道线自动控制的回调 """
 
-        # 如果控制锁被使用，直接返回
-        if self.state != self.ControlLockState.FREE:
-            return
-        else:
-            self.set_state(self.ControlLockState.USED)
-        # self.get_logger().info(f"lane_result: {lane_result_msg}")
+        if self.__lock_state == self.ControlLockState.FREE:
+            self.__lock_state = self.ControlLockState.USED
+            # self.get_logger().info(f"lane_result: {lane_result_msg}")
 
-        slope = lane_result_msg.slope                   # 预测方向的斜率
-        distance_bias = lane_result_msg.offset_distance # 偏移距离
-        self.reset_state()                              # 重置状态锁
+            slope = lane_result_msg.slope                   # 预测方向的斜率
+            distance_bias = lane_result_msg.offset_distance # 偏移距离
+                                                            # 重置状态锁 记录上一次状态
+            self.__lock_state = self.ControlLockState.FREE
+            self.__last_lock_state = self.ControlLockState.USED
 
-    def reset_speed(self):
+    def reset_speed_timer_callback(self):
         """ 重置速度 """
-        if self.state != self.ControlLockState.FREE:
-            return
-        self.ser_ctr.serial_frame.set_speed("x", 0)
-        self.ser_ctr.serial_frame.set_speed("y", 0)
-        self.ser_ctr.serial_frame.set_speed("theta", 0)
-        frame, frame_list = self.ser_ctr.send_car()
-
+        if self.__lock_state == self.ControlLockState.FREE and self.__last_lock_state == self.ControlLockState.FREE:
+            self.ser_ctr.serial_frame.set_speed("x", 0)
+            self.ser_ctr.serial_frame.set_speed("y", 0)
+            self.ser_ctr.serial_frame.set_speed("theta", 0)
+            frame, frame_list = self.ser_ctr.send_car()
+        self.__last_lock_state = self.ControlLockState.FREE
 
     @staticmethod
     def sign(value: float):
@@ -149,9 +138,6 @@ def main(args=None):
     node = AutoController()
 
     rclpy.spin(node)
-    while True:
-        time.sleep(0.01)
-        node.reset_speed()
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically

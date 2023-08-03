@@ -18,7 +18,7 @@ import time
 import cv2
 from .utils.trt_infer import TensorRTInfer, InferResult
 
-from vision_lanedet_interfaces.msg import LaneResult
+from interfaces.msg import Lanes
 
 
 class LaneDetector(Node):
@@ -43,7 +43,7 @@ class LaneDetector(Node):
 
         # 发布车道线检测结果
         self.lane_result_pub = self.create_publisher(
-            msg_type=LaneResult,
+            msg_type=Lanes,
             topic="lane_result",
             qos_profile=10,
         )
@@ -70,7 +70,7 @@ class LaneDetector(Node):
         offset_distance = infer_result.offset_distance           # 偏移距离
 
         # 发布车道线检测结果
-        lane_result_msg = LaneResult()
+        lane_result_msg = Lanes()
         lane_result_msg.lanes_y_coords = lane_y_coords.tolist()
         lane_result_msg.lanes_x_coords = lanes_x_coords.flatten().tolist()
         lane_result_msg.lanes_x_coords_kl = lanes_x_coords_kl.flatten().tolist()

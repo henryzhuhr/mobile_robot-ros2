@@ -1,3 +1,6 @@
 pyyaml
 empy
-numpy
+catkin_pkg
+numpy==1.20.2
+# opencv-python
+pycuda

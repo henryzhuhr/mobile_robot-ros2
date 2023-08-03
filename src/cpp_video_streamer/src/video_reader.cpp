@@ -29,15 +29,21 @@ void VideoReader::init_video_cap(std::string video_source)
     if (video_source == "camera")
     {
         bool is_open_camera = false;
-        for (int i = 0; i < 9; i++)
+        // for (int i = 2; i < 9; i++)
+        // {
+        //     video_cap.open(i);
+        //     if (video_cap.isOpened())
+        //     {
+        //         is_open_camera = true;
+        //         RCLCPP_INFO(this->get_logger(), "\033[01;32mOpen camera\033[0m %d", i);
+        //         break;
+        //     }
+        // }
+        video_cap.open(2);
+        if (video_cap.isOpened())
         {
-            video_cap.open(i);
-            if (video_cap.isOpened())
-            {
-                is_open_camera = true;
-                RCLCPP_INFO(this->get_logger(), "\033[01;32mOpen camera\033[0m %d", i);
-                break;
-            }
+            is_open_camera = true;
+            RCLCPP_INFO(this->get_logger(), "\033[01;32mOpen camera\033[0m %d", 2);
         }
         if (is_open_camera == false)
         {
@@ -47,7 +53,7 @@ void VideoReader::init_video_cap(std::string video_source)
         {
             video_cap.set(cv::CAP_PROP_FRAME_WIDTH, 1920);  // 宽度
             video_cap.set(cv::CAP_PROP_FRAME_HEIGHT, 1080); // 高度
-            video_cap.set(cv::CAP_PROP_FPS, 30);            // 帧率 帧/秒
+            video_cap.set(cv::CAP_PROP_FPS, 10);            // 帧率 帧/秒
             video_cap.set(cv::CAP_PROP_BRIGHTNESS, 1);      // 亮度 1
                                                             // video_cap.set(cv::CAP_PROP_CONTRAST, 40);      // 对比度 40
                                                             // video_cap.set(cv::CAP_PROP_SATURATION, 50);    // 饱和度 50
@@ -78,18 +84,22 @@ void VideoReader::timer_callback()
         throw std::runtime_error("\033[01;31mCould not read frame\033[0m");
         return;
     }
-    auto message = sensor_msgs::msg::Image();
-    message.header.frame_id = "camera";
-    message.header.stamp = this->now();
-    message.height = frame.rows;
-    message.width = frame.cols;
-    message.encoding = "bgr8";
-    message.is_bigendian = false;
-    message.step = frame.cols * 3;
-    size_t size = frame.cols * frame.rows * 3;
-    message.data.resize(size);
-    memcpy(&message.data[0], frame.data, size);
-    publisher_->publish(message);
+    else
+    {
+        RCLCPP_INFO(this->get_logger(), "Read frame");
+        auto message = sensor_msgs::msg::Image();
+        message.header.frame_id = "camera";
+        message.header.stamp = this->now();
+        message.height = frame.rows;
+        message.width = frame.cols;
+        message.encoding = "bgr8";
+        message.is_bigendian = false;
+        message.step = frame.cols * 3;
+        size_t size = frame.cols * frame.rows * 3;
+        message.data.resize(size);
+        memcpy(&message.data[0], frame.data, size);
+        publisher_->publish(message);
+    }
 
     // RCLCPP_INFO(this->get_logger(), "Read frame stamp[%d.%d]", message.header.stamp.sec, message.header.stamp.nanosec);
 }
