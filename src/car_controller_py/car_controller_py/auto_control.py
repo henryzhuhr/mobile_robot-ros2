@@ -44,9 +44,8 @@ class AutoController(Node):
         self.lane_detetion_subscription # prevent unused variable warning
 
         # -- 定时器 --
-        self.reset_speed_timer = self.create_timer(0.1, self.reset_speed_timer_callback)
+        self.reset_speed_timer = self.create_timer(0.05, self.reset_speed_timer_callback)
         self.reset_speed_timer
-
 
         # 控制锁，防止多个节点同时控制
         # 只有当手柄控制时，才能修改，优先级最高
@@ -73,6 +72,8 @@ class AutoController(Node):
         """
 
         axes_value = joy_msg.axes
+        buttons_value = joy_msg.buttons
+        left_L_flag = buttons_value[4] # 左上方 L 按键
 
         # 摇杆(joystick): 美国手
         js_left__x = self.sign(axes_value[0]) # 左摇杆 x 轴 航向 course
@@ -80,17 +81,18 @@ class AutoController(Node):
         js_right_x = self.sign(axes_value[2]) # 右摇杆 x 轴 前后 forwardback
         js_right_y = self.sign(axes_value[3]) # 右摇杆 y 轴 左右 leftright
 
-        if js_right_x[1] != 0 or js_right_y[1] != 0 or js_left__x[1] != 0:
-            self.__lock_state = self.ControlLockState.USED
+        speed_scale = 0.2 # 手动控制时建议设置一个系数，防止速度过快
 
-            speed_scale = 0.2 # 手动控制时建议设置一个系数，防止速度过快
-                              # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
+        # self.get_logger().info(f"{left_L_flag} {axes_value}")# TODO: 可以注释掉
+        # if left_L_flag == 1:# 按键按下才能控制
+        if js_right_y[1] != 0 or js_right_x[1] != 0 or js_left__x[1] != 0:
+            # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
             set_y = self.ser_ctr.serial_frame.set_speed("x", -1 * js_right_y[0] * js_right_y[1] * speed_scale)
             set_x = self.ser_ctr.serial_frame.set_speed("y", -1 * js_right_x[0] * js_right_x[1] * speed_scale)
             set_theta = self.ser_ctr.serial_frame.set_speed("theta", js_left__x[0] * js_left__x[1] * speed_scale)
 
+            self.__lock_state = self.ControlLockState.USED
             frame, frame_list = self.ser_ctr.send_car()
-            self.get_logger().info(f"{axes_value}")
 
             # 重置状态锁 记录上一次状态
             self.__lock_state = self.ControlLockState.FREE
@@ -103,9 +105,21 @@ class AutoController(Node):
             self.__lock_state = self.ControlLockState.USED
             # self.get_logger().info(f"lane_result: {lane_result_msg}")
 
-            slope = lane_result_msg.slope                   # 预测方向的斜率
-            distance_bias = lane_result_msg.offset_distance # 偏移距离
-                                                            # 重置状态锁 记录上一次状态
+            y_offset = lane_result_msg.y_offset # y_offset
+            z_offset = lane_result_msg.z_offset # z_offset
+
+            self.get_logger().info(f"y_offset: {y_offset} ,  z_offset: {z_offset}")
+
+            speed_scale = 0.2 # 手动控制时建议设置一个系数，防止速度过快
+
+            # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
+            set_y = self.ser_ctr.serial_frame.set_speed("x", -1 * speed_scale)
+            set_x = self.ser_ctr.serial_frame.set_speed("y", -1 * y_offset * speed_scale)
+            set_theta = self.ser_ctr.serial_frame.set_speed("theta", z_offset * speed_scale)
+
+            # frame, frame_list = self.ser_ctr.send_car()
+
+            # 重置状态锁 记录上一次状态
             self.__lock_state = self.ControlLockState.FREE
             self.__last_lock_state = self.ControlLockState.USED
 

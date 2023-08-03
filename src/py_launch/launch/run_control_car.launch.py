@@ -13,7 +13,7 @@ def generate_launch_description():
         executable="video_reader",
         name="t1",
         parameters=[{
-            "source": "camera", # camera or file/url
+            "source": "public/IMG_5281.MOV", # camera or file/url
         }],
     )
     cpp_video_viewer = Node(
@@ -46,7 +46,6 @@ def generate_launch_description():
         name="vision_lanedet_py",
         parameters=[{
             "weight_file": weight_file,
-            "video": "weights/test.mp4",
             "skip_frame": 5,
             "img_h": 720,
             "img_w": 1280,

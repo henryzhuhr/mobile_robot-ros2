@@ -11,7 +11,8 @@ from .constants import (
 )
 
 import tensorrt as trt # Test on TRT 8.2.1
-assert trt.__version__ == "8.2.1.8", "tensorrt version must be 8.2.1"
+target_version = "8.2.1"
+assert trt.__version__[:len(target_version)] == target_version, f"tensorrt version must be {target_version}"
 import pycuda.driver as cuda
 import pycuda.autoinit # This is needed for initializing CUDA driver
 
