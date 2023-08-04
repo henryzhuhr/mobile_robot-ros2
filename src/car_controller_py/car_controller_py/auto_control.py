@@ -16,12 +16,10 @@ class ButtonState:
 
 
 class AutoController(Node):
-    class ControlLockState:
-        """ 控制锁状态 """
-        FREE = 0   # 没有线程控制
-        USED = 1
-
     class ControlMode:
+        """
+        控制模式
+        """
         MODE_MAP = {
             0: "MANUAL",
             1: "AUTO_LANE",
@@ -29,15 +27,11 @@ class AutoController(Node):
         MANUAL = 0    # 手动控制
         AUTO_LANE = 1 # 基于车道线的自动控制
 
-    # 状态锁
-    __lock_state = ControlLockState.FREE
-    __last_lock_state = ControlLockState.FREE
-
     def __init__(self):
         super().__init__('auto_controller')
         self.get_logger().info("\033[01;32mCar Auto Controller Node Started\033[0m")
 
-        # 打开串口
+        # -- 打开串口 --
         self.ser_ctr = SerialControl()
         if self.ser_ctr.serial_port is None:
             self.get_logger().fatal(f"\033[01;31mOpen serial failed\033[0m ")
@@ -45,7 +39,7 @@ class AutoController(Node):
             self.get_logger().info(f"\033[01;32mSuccessfully open serial: "
                                    f"\033[0m{self.ser_ctr.serial_port.name}")
 
-        # -- 订阅手柄消息 ( Joy 是 ROS2 内置的节点 ，读取 /dev/input/js0 )
+        # -- 订阅手柄消息 ( Joy 是 ROS2 内置的节点 ，读取 /dev/input/js0 ) --
         self.joy_subscription = self.create_subscription(Joy, 'joy', self.joy_callback, 10)
         self.joy_subscription # prevent unused variable warning
 
@@ -58,17 +52,13 @@ class AutoController(Node):
         )
         self.lane_detetion_subscription # prevent unused variable warning
 
-        # -- 定时器 --
-        self.reset_speed_timer = self.create_timer(0.1, self.reset_speed_timer_callback)
-        self.reset_speed_timer
-
         # -- 定时器 (按键状态清理) --
         self.button_select_state = ButtonState()
         self.button_states = [
             self.button_select_state,
         ]
         self.reset_button_state_timer = self.create_timer(
-            1,# 1s 清理一次按键状态，因此，所有的按键连击需要小于 1s
+            1,                                             # 1s 清理一次按键状态，因此，所有的按键连击需要小于 1s
             self.reset_button_state_callback,
         )
         self.reset_button_state_timer
@@ -79,7 +69,10 @@ class AutoController(Node):
 
     def joy_callback(self, joy_msg: Joy):
         """
-        # ROS 内置手柄控制文档 http://wiki.ros.org/joy
+        手柄手动控制的回调
+
+        ROS 内置手柄控制文档 http://wiki.ros.org/joy
+
         Joy 消息结构
         ```python
         sensor_msgs.msg.Joy(
@@ -116,38 +109,31 @@ class AutoController(Node):
         ```
         """
 
-        axes_value = joy_msg.axes
-        buttons_value = joy_msg.buttons
-        left_L_flag = buttons_value[4] # 左上方 L 按键
-                                       # self.get_logger().info(f"axes: {joy_msg.axes}    buttons :{buttons_value}")
-
         # 摇杆(joystick): 美国手
         js_left__x = self.sign(joy_msg.axes[0]) # 左摇杆 x 轴 航向 course
         js_left__y = self.sign(joy_msg.axes[1]) # 左摇杆 y 轴 升降 lift  (禁用)
         js_right_x = self.sign(joy_msg.axes[2]) # 右摇杆 x 轴 前后 forwardback
         js_right_y = self.sign(joy_msg.axes[3]) # 右摇杆 y 轴 左右 leftright
 
-        # 按键
-        button_select = buttons_value[8] # select
-        if button_select != self.button_select_state.last_state:
+        # 按键 select [8] 翻转计数
+        # TODO 优化: 记录上升沿和下降沿为一次高电平触发，而不是翻转计数
+        if joy_msg.buttons[8] != self.button_select_state.last_state:
             self.button_select_state.flip_cnt += 1
-        self.button_select_state.last_state = button_select
+        self.button_select_state.last_state = joy_msg.buttons[8]
 
-        if self.button_select_state.flip_cnt == 2 * 2: # 4次翻转，连续按下两次
-            self.control_mode = (self.control_mode + 1) % len(self.ControlMode.MODE_MAP)
+        if self.button_select_state.flip_cnt == 2 * 2:             # 4次翻转，连续按下两次
+            self.control_mode = (self.control_mode + 1) % self.ControlMode.MODE_MAP.__len__()
             self.button_select_state.flip_cnt = 0
-            self.get_logger(
-            ).info(f"\033[01;36mControl Mode Switching:\033[0m {self.ControlMode.MODE_MAP[self.control_mode]}")
+            self.get_logger().info(
+                f"\033[01;36mControl Mode Switching:\033[0m"
+                f" {self.ControlMode.MODE_MAP[self.control_mode]}"
+            )
 
         # -----------
 
         speed_scale = 0.2 # 手动控制时建议设置一个系数，防止速度过快
 
-        # self.get_logger().info(f"{left_L_flag} {joy_msg.axes}")# TODO: 可以注释掉
-        # if left_L_flag == 1:# 按键按下才能控制
-        # if js_right_y[1] != 0 or js_right_x[1] != 0 or js_left__x[1] != 0:
         if self.control_mode == self.ControlMode.MANUAL:
-            self.__lock_state = self.ControlLockState.USED
             # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
             set_y = self.ser_ctr.serial_frame.set_speed("x", -1 * js_right_y[0] * js_right_y[1] * speed_scale)
             set_x = self.ser_ctr.serial_frame.set_speed("y", -1 * js_right_x[0] * js_right_x[1] * speed_scale)
@@ -156,17 +142,10 @@ class AutoController(Node):
             frame, frame_list = self.ser_ctr.send_car()
             self.get_logger().info(f"axes: {joy_msg.axes} send:({set_x}, {set_y}, {set_theta}))")
 
-            # 重置状态锁 记录上一次状态
-            self.__lock_state = self.ControlLockState.FREE
-            self.__last_lock_state = self.ControlLockState.USED
-
     def lanedet_callback(self, lane_result_msg: Lanes):
         """ 车道线自动控制的回调 """
 
         if self.control_mode == self.ControlMode.AUTO_LANE:
-            # if self.__lock_state == self.ControlLockState.FREE and self.__last_lock_state == self.ControlLockState.FREE:
-
-            # self.get_logger().info(f"lane_result: {lane_result_msg}")
 
             y_offset = lane_result_msg.y_offset # y_offset
             z_offset = lane_result_msg.z_offset # z_offset
@@ -174,27 +153,13 @@ class AutoController(Node):
             speed_scale = 0.2 # 手动控制时建议设置一个系数，防止速度过快
 
             # x/y 轴速度 需要给 -1 ，原因未知，根据实际车调试控制
+            # TODO
             set_y = self.ser_ctr.serial_frame.set_speed("x", 1 * 0.003 * y_offset * speed_scale)
             set_x = self.ser_ctr.serial_frame.set_speed("y", -1 * 0.1)
             set_theta = self.ser_ctr.serial_frame.set_speed("theta", -1 * 0.3 * z_offset * speed_scale)
-
-            self.__lock_state = self.ControlLockState.USED
             frame, frame_list = self.ser_ctr.send_car()
             self.get_logger(
             ).info(f"y_offset: {y_offset} ,  z_offset: {z_offset} send:({set_x}, {set_y}, {set_theta}))")
-
-            # 重置状态锁 记录上一次状态
-            self.__lock_state = self.ControlLockState.FREE
-            self.__last_lock_state = self.ControlLockState.USED
-
-    def reset_speed_timer_callback(self):
-        """ 重置速度 """
-        if self.__lock_state == self.ControlLockState.FREE and self.__last_lock_state == self.ControlLockState.FREE:
-            self.ser_ctr.serial_frame.set_speed("x", 0)
-            self.ser_ctr.serial_frame.set_speed("y", 0)
-            self.ser_ctr.serial_frame.set_speed("theta", 0)
-            frame, frame_list = self.ser_ctr.send_car()
-        self.__last_lock_state = self.ControlLockState.FREE
 
     def reset_button_state_callback(self):
         """ 重置按键状态 """
