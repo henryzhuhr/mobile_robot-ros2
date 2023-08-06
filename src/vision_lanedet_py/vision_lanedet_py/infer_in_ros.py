@@ -18,7 +18,7 @@ import time
 import cv2
 from .utils.trt_infer import TensorRTInfer, InferResult
 
-from vision_lanedet_interfaces.msg import LaneResult
+from interfaces.msg import Lanes
 
 
 class LaneDetector(Node):
@@ -26,7 +26,6 @@ class LaneDetector(Node):
         super().__init__("lane_detector")
         self.get_logger().info("\033[01;32mLaneDetector Node Started\033[0m")
         self.declare_parameter("weight_file", f"{os.getcwd()}/weights/ufld-final-x64.engine")
-        self.declare_parameter("video", f"{os.getcwd()}/test.mp4")
         self.declare_parameter("skip_frame", 5)
         self.declare_parameter("img_h", 720)
         self.declare_parameter("img_w", 1280)
@@ -43,7 +42,7 @@ class LaneDetector(Node):
 
         # 发布车道线检测结果
         self.lane_result_pub = self.create_publisher(
-            msg_type=LaneResult,
+            msg_type=Lanes,
             topic="lane_result",
             qos_profile=10,
         )
@@ -54,11 +53,8 @@ class LaneDetector(Node):
         self.get_logger().info(f"\033[01;32mLoad TRT Engine Sucessffully\033[0m")
 
     def video_reader_callback(self, msg: Image) -> None:
-        ros_image: Image = msg
-        img = self.cv_bridge.imgmsg_to_cv2(ros_image)
-        # self.get_logger().info("frame")
-        
-        infer_result: InferResult = self.model_infer.infer(img)
+        img = self.cv_bridge.imgmsg_to_cv2(msg)
+        infer_result: InferResult = self.model_infer.infer(img,False)
 
         lane_y_coords = infer_result.lanes_y_coords              # [18]     所有车道线共用一组 y 坐标
         lanes_x_coords = infer_result.lanes_x_coords             # [4, 18]  4 个车道线的 x 坐标
@@ -66,25 +62,28 @@ class LaneDetector(Node):
         lane_center_x_coords = infer_result.lane_center_x_coords # [18]     中心车道线的 x 坐标
         forward_direct = infer_result.forward_direct             # [2, 2]   实际前进方向
         predict_direct = infer_result.predict_direct             # [2, 2]   预测前进方向
-        slope = infer_result.slope                               # 预测方向的斜率
-        offset_distance = infer_result.offset_distance           # 偏移距离
+        y_offset = infer_result.y_offset
+        z_offset = infer_result.z_offset
+
+        img = self.model_infer.mark_result(img, infer_result)
 
         # 发布车道线检测结果
-        lane_result_msg = LaneResult()
+        lane_result_msg = Lanes()
+        lane_result_msg.header = msg.header
+        lane_result_msg.img = self.cv_bridge.cv2_to_imgmsg(img)
         lane_result_msg.lanes_y_coords = lane_y_coords.tolist()
         lane_result_msg.lanes_x_coords = lanes_x_coords.flatten().tolist()
         lane_result_msg.lanes_x_coords_kl = lanes_x_coords_kl.flatten().tolist()
         lane_result_msg.lane_center_x_coords = lane_center_x_coords.flatten().tolist()
         lane_result_msg.forward_direct = forward_direct.flatten().tolist()
         lane_result_msg.predict_direct = predict_direct.flatten().tolist()
-        lane_result_msg.slope = float(slope)
-        lane_result_msg.offset_distance = int(offset_distance)
+        lane_result_msg.y_offset = int(y_offset)
+        lane_result_msg.z_offset = float(z_offset)
+        
+        
 
-
-        # lane_result_msg.lanes_x_coords_kl = lane_y_coords
-        # lane_result_msg.lane_center_x_coords = lane_y_coords
         self.lane_result_pub.publish(lane_result_msg)
-        # self.get_logger().info('Publishing: "%s"' % lane_result_msg)# CHANGE：自定义消息
+
 
 def main(args=None):
     rclpy.init(args=args)

@@ -1,13 +1,22 @@
 
+tmp/
+tmps/
+temp/
+temps/
+
+
 weights/
 pnpm-lock.yaml
 node_modules
 
 # 项目资源目录
-resource/
+public/
 
 
 # ROS about
 build/
 install/
 log/
+
+# Python
+*.py[cod]

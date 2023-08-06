@@ -14,14 +14,14 @@ cd $WORKDIR
 # rm -rf build install log
 
 eval "$(conda shell.bash hook)"
-conda activate ros2-development
+conda activate ros2
 
 # pip install empy numpy==1.20
 # colcon build
+# colcon build --packages-select interfaces
+# colcon build --packages-select py_launch
 # colcon build --packages-select cpp_video_streamer
-# colcon build --packages-select vision_lanedet_interfaces
 # colcon build --packages-select vision_lanedet_py
-colcon build --packages-select py_launch
 colcon build --packages-select car_controller_py
 
 
@@ -33,7 +33,7 @@ export PYTHONPATH=$PYTHONPATH:$ext_python_path
 
 
 
-ros2 launch py_launch run_manul_control_car.launch.py
+ros2 launch py_launch run_control_car.launch.py
 # ros2 launch py_launch run_lanedet.launch.py
 # ros2 launch py_launch run_all_nodes.launch.py
 
