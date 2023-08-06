@@ -39,7 +39,7 @@ void VideoReader::init_video_cap(std::string video_source)
         //         break;
         //     }
         // }
-        video_cap.open(2);
+        video_cap.open(3);
         if (video_cap.isOpened())
         {
             is_open_camera = true;

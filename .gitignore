@@ -1,4 +1,10 @@
 
+tmp/
+tmps/
+temp/
+temps/
+
+
 weights/
 pnpm-lock.yaml
 node_modules

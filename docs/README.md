@@ -2,6 +2,18 @@
 
 基于 Jetson Nano
 
+## 准备工作
+
+### 摄像头畸变矫正
+
+使用 [Opencv 官方棋盘格](https://docs.opencv.org/2.4/_downloads/pattern.png) 进行相机标定
+
+得出标定板的内部行列交点个数 `6 * 9`
+
+![棋盘格标定点](./images/camera-distortion-correction--checkerboard.png)
+
+`camera-distortion-correction.py`
+
 
 ## 功能包
 ### 视频流 cpp_video_streamer
