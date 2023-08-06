@@ -54,7 +54,7 @@ class LaneDetector(Node):
 
     def video_reader_callback(self, msg: Image) -> None:
         img = self.cv_bridge.imgmsg_to_cv2(msg)
-        infer_result: InferResult = self.model_infer.infer(img,False)
+        infer_result: InferResult = self.model_infer.infer(img)
 
         lane_y_coords = infer_result.lanes_y_coords              # [18]     所有车道线共用一组 y 坐标
         lanes_x_coords = infer_result.lanes_x_coords             # [4, 18]  4 个车道线的 x 坐标

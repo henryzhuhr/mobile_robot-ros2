@@ -70,13 +70,15 @@ def phrasing_output(
     for i in range(model_out.shape[1]):
         if np.sum(model_out[:, i] != 0) > 2:
             for k in range(model_out.shape[0]):
+                y = int(img_h / 288 * (row_anchor[cls_num_per_lane - 1 - k])) - 1
+                lanes_y_coords[k] = y
                 if model_out[k, i] > 0:
 
                     x = int(model_out[k, i] * col_sample_w * img_w / 800) - 1
-                    y = int(img_h / 288 * (row_anchor[cls_num_per_lane - 1 - k])) - 1
+                    
                     # i: lane_id [0,3]
                     # k: row_id  [0,17]
                     lanes_x_coords[i, k] = x
-                    lanes_y_coords[k] = y
+                    
 
     return (lanes_x_coords, lanes_y_coords)

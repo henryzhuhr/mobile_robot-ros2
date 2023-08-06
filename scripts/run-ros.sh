@@ -21,7 +21,7 @@ conda activate ros2
 # colcon build --packages-select interfaces
 # colcon build --packages-select py_launch
 # colcon build --packages-select cpp_video_streamer
-# colcon build --packages-select vision_lanedet_py
+colcon build --packages-select vision_lanedet_py
 colcon build --packages-select car_controller_py
 
 

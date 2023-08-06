@@ -45,7 +45,7 @@ class SerialControl:
     def set_speed(self, speed_type: str, speed: float):
         return self.serial_frame.set_speed(speed_type,speed)
 
-    def send_car(self):
+    def send_car(self,is_send:bool=True):
         frame_list = self.serial_frame.get_byte_frame()
 
         # 拼接字节流

@@ -29,22 +29,22 @@ void VideoReader::init_video_cap(std::string video_source)
     if (video_source == "camera")
     {
         bool is_open_camera = false;
-        // for (int i = 2; i < 9; i++)
-        // {
-        //     video_cap.open(i);
-        //     if (video_cap.isOpened())
-        //     {
-        //         is_open_camera = true;
-        //         RCLCPP_INFO(this->get_logger(), "\033[01;32mOpen camera\033[0m %d", i);
-        //         break;
-        //     }
-        // }
-        video_cap.open(3);
-        if (video_cap.isOpened())
+        for (int i = 2; i < 9; i++)
         {
-            is_open_camera = true;
-            RCLCPP_INFO(this->get_logger(), "\033[01;32mOpen camera\033[0m %d", 2);
+            video_cap.open(i);
+            if (video_cap.isOpened())
+            {
+                is_open_camera = true;
+                RCLCPP_INFO(this->get_logger(), "\033[01;32mOpen camera\033[0m %d", i);
+                break;
+            }
         }
+        // video_cap.open(3);
+        // if (video_cap.isOpened())
+        // {
+        //     is_open_camera = true;
+        //     RCLCPP_INFO(this->get_logger(), "\033[01;32mOpen camera\033[0m %d", 2);
+        // }
         if (is_open_camera == false)
         {
             throw std::runtime_error("\033[01;31mCould not open camera by id 0-9\033[0m");

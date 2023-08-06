@@ -29,6 +29,7 @@ class InferResult:
 
     其中前进方向定义为 最底部的点`(x0,y0)`和上一个点`(x1,y1)`的连线
     """
+
     def __init__(self) -> None:
         self.lanes_y_coords = np.zeros([18], dtype=np.int32)
         self.lanes_x_coords = np.zeros([4, 18], dtype=np.int32)
@@ -56,23 +57,24 @@ class BaseModelInfer:
         # 执行模型推理，子类必须实现此方法
         ## Args:
         - `input`: `np.ndarray`, `(1, C, H, W)`, `np.float32`, range: `[0, 1]`
-        
+
         ## Returns:
         - `output`: `np.ndarray`, `(201, 18, 4)`, `np.float32`, range: `[0, 1]`
         '''
         raise NotImplementedError
     ```
     """
+
     def __init__(
         self,
         griding_num=GRIDING_NUM,
         cls_num_per_lane=CLS_NUM_PER_LANE,
         row_anchor=ROW_ANCHOR,
         klf_id=[                           # 真正执行卡尔曼滤波的车道线 id
-            0,                             # 0 左左车道线
-            1,                             # 1 左车道线
-            2,                             # 2 右车道线
-            3,                             # 3 右右车道线
+            0,                             # 1 左左车道线
+            1,                             # 2 左车道线
+            2,                             # 3 右车道线
+            3,                             # 4 右右车道线
         ]
     ) -> None:
 
@@ -91,7 +93,7 @@ class BaseModelInfer:
         # 执行模型推理，子类必须实现此方法
         ## Args:
         - `input`: `np.ndarray`, `(1, C, H, W)`, `np.float32`, range: `[0, 1]`
-        
+
         ## Returns:
         - `output`: `np.ndarray`, `(201, 18, 4)`, `np.float32`, range: `[0, 1]`
         """
@@ -113,8 +115,8 @@ class BaseModelInfer:
 
         # 解析模型输出
         (
-            lanes_x_coords,        # [4,18] 4 个车道线 x 坐标
-            lane_y_coords,         # [18]   所有车道线共用一组 y 坐标
+            lanes_x_coords,        # np.int32 [4,18] 4 个车道线 x 坐标
+            lane_y_coords,         # np.int32 [18]   所有车道线共用一组 y 坐标
         ) = phrasing_output(
             model_out,
             img_h,
@@ -128,33 +130,49 @@ class BaseModelInfer:
         [716 691 666 644 619 594 569 546 521 496 471 449 424 399 374 351 326 301]
         """
 
+        # 拟合左右车道线并且重新采样
+        (
+            left__lane_x,                # 重新拟合左车道线
+            right_lane_x,                # 重新拟合右车道线
+        ) = self.fit_and_resample_lanes(
+            lanes_x_coords[1],
+            lanes_x_coords[2],
+            lane_y_coords,
+        )
+        lanes_x_coords[1] = left__lane_x
+        lanes_x_coords[2] = right_lane_x
+
+        lanes_x_coords_kl = np.zeros_like(
+            lanes_x_coords, dtype=np.int32)  # [4,18]
+
+        # 卡尔曼滤波
         if is_kalman:
-            # 卡尔曼滤波
-            lanes_x_coords_kl = np.zeros_like(lanes_x_coords, dtype=np.int32)
-            for i in range(4):
-                if i in self.klf_id:
-                    lanes_x_coords_kl[i] = self.lanes_klf[i].update(lanes_x_coords[i], lane_y_coords)
-        else:
-            lanes_x_coords_kl = lanes_x_coords
+            for i in self.klf_id:
+                lanes_x_coords_kl[i] = self.lanes_klf[i].update(
+                    lanes_x_coords[i], lane_y_coords)
 
         # 计算中心线的 x 坐标
         lane_center_x_coords = BaseModelInfer.compute_center_lane(
-            lanes_x_coords_kl[1], lanes_x_coords_kl[2], lane_y_coords
+            lanes_x_coords_kl[1] if is_kalman else lanes_x_coords[1],
+            lanes_x_coords_kl[2] if is_kalman else lanes_x_coords[2],
+            lane_y_coords,
         )
 
         # 计算预测方向的斜率
         (
             slope,    # 斜率
-            (x0, y0), # 中心车道线，最底部的点
-            (x1, y1), # 中心车道线，最底部的上一个点
+            (x0, y0),  # 中心车道线，最底部的点
+            (x1, y1),  # 中心车道线，最底部的上一个点
         ) = BaseModelInfer.compute_slope(lane_center_x_coords, lane_y_coords)
 
-        # 计算方向角便宜
+        # 计算方向角误差
         z_offset = np.arctan(slope)
 
         # 实际的前进方向
         # TODO ，需要实际标定，目前使用图像中心线作为前进方向
-        forward_direct = np.array(((img_w // 2, img_h), (img_w // 2, img_h / 5)), dtype=np.int32)
+        # w:1280  [148 (594) 1040]
+        forward_direct = np.array(
+            ((img_w // 2, img_h), (img_w // 2, img_h / 5)), dtype=np.int32)
         # 预测的前进方向
         predict_direct = np.array(((x0, y0), (x1, y1)), dtype=np.int32)
 
@@ -162,8 +180,27 @@ class BaseModelInfer:
 
         # 计算偏移距离，取最底部的点的 x 坐标计算，用像素表示，(以图像中心为原点，向右为正方向)，
         # 对应到小车就是 y 轴方向
-        if x0 == 0:
+        if x0 == 0:  # 如果不存在中心车道线，则 y_offset = 0
             y_offset = np.int32(0)
+            is_lx_all_zero = True
+            for i in range(lanes_x_coords[1].shape[0]):
+                if lanes_x_coords[1][i] != 0:
+                    is_lx_all_zero = False
+                    break
+            is_rx_all_zero = True
+            for i in range(lanes_x_coords[2].shape[0]):
+                if lanes_x_coords[2][i] != 0:
+                    is_rx_all_zero = False
+                    break
+
+            if is_lx_all_zero == False:  # 左车道线存在，基于左车道线判断
+                predict_direct_x = lanes_x_coords[1][0]+(594-148)
+                y_offset = np.int32(predict_direct_x - forward_direct[0][0])
+            elif is_rx_all_zero == False:  # 右车道线存在，基于右车道线判断
+                predict_direct_x = lanes_x_coords[2][0]-(1040-594)
+                y_offset = np.int32(predict_direct_x - forward_direct[0][0])
+            else:
+                y_offset = np.int32(0)
         else:
             y_offset = np.int32(predict_direct[0][0] - forward_direct[0][0])
 
@@ -180,15 +217,51 @@ class BaseModelInfer:
         return infer_result
 
     @staticmethod
-    def compute_center_lane(left__lane_x_coords, right_lane_x_coords, lane_y_coords):
+    def fit_and_resample_lanes(
+        lx_s: np.ndarray,       # np.int32 [18] left__lane_x_coords
+        rx_s: np.ndarray,       # np.int32 [18] right_lane_x_coords
+        y_s: np.ndarray,        # np.int32 [18] lane_y_coords
+        deg: int = 2,           # 拟合次数
+    ):
         """
-        计算中心车道线
+        返回左右车道线的拟合后重新采样的点: `[resample_lx_s, resample_rx_s ]`
+        点不够时，返回 全 0 ，表明该检测结果不可靠
         """
-        lane_center_x_coords = np.zeros(left__lane_x_coords.shape, dtype=np.int32)
-        for i in range(lane_y_coords.shape[0]):
-            left__x = left__lane_x_coords[i]
-            right_x = right_lane_x_coords[i]
-            y = lane_y_coords[i]
+
+        # 左右车道线 提取非 0 的点的下标
+        non_zero_lx_idx = [i for i, lx in enumerate(lx_s) if lx != 0]
+        non_zero_rx_idx = [i for i, rx in enumerate(rx_s) if rx != 0]
+
+        def resample(idx, x_s, y_s):
+            # 3次多项式拟合，重新采样的车道线
+            if len(idx) > 4:
+                params = np.polyfit(
+                    np.array([y_s[i] for i in idx], dtype=np.int32),
+                    np.array([x_s[i] for i in idx], dtype=np.int32),
+                    deg,
+                )
+                resample_x_s = np.polyval(params, y_s).astype(np.int32)
+            else:
+                resample_x_s = np.zeros_like(x_s, np.int32)
+            return resample_x_s
+
+        return [
+            resample(non_zero_lx_idx, lx_s, y_s),
+            resample(non_zero_rx_idx, rx_s, y_s),
+        ]
+
+    @staticmethod
+    def compute_center_lane(
+        lx_s: np.ndarray,    # np.int32 [18] left__lane_x_coords
+        rx_s: np.ndarray,    # np.int32 [18] right_lane_x_coords
+        y_s: np.ndarray,     # np.int32 [18] lane_y_coords
+    ):
+        """ 计算中心车道线 """
+        lane_center_x_coords = np.zeros(lx_s.shape, dtype=np.int32)
+        for i in range(y_s.shape[0]):
+            left__x = lx_s[i]
+            right_x = rx_s[i]
+            y = y_s[i]
 
             # 如果左右车道线有一个不存在，则中心车道线也不存在
             if left__x == 0 or right_x == 0:
@@ -223,11 +296,14 @@ class BaseModelInfer:
             return (np.float64(0), (0, 0), (0, 0))
         else:
             # 从有效点中提取 x 和 y 坐标
-            x = np.array([lane_x_coords[i] for i in valid_point_index], dtype=np.int32)
-            y = np.array([lane_y_coords[i] for i in valid_point_index], dtype=np.int32)
+            x = np.array([lane_x_coords[i]
+                         for i in valid_point_index], dtype=np.int32)
+            y = np.array([lane_y_coords[i]
+                         for i in valid_point_index], dtype=np.int32)
 
             # 根据有效点拟合二次曲线
-            a, b, c = np.polyfit(y, x, 2) # TODO: RankWarning: Polyfit may be poorly conditioned
+            # TODO: RankWarning: Polyfit may be poorly conditioned
+            a, b, c = np.polyfit(y, x, 2)
 
             y0 = y[0]
             y1 = y[1]
@@ -251,18 +327,24 @@ class BaseModelInfer:
                 slope = np.float64(0)
             else:
 
-                slope = np.float64( (x1 - x0)/(y0 - y1))
+                slope = np.float64((x1 - x0) / (y0 - y1))
             return (slope, (int(x0), y0), (int(x1), y1))
 
     @staticmethod
     def mark_result(img: np.ndarray, infer_result: InferResult):
 
-        lane_y_coords = infer_result.lanes_y_coords              # [18]     所有车道线共用一组 y 坐标
-        lanes_x_coords = infer_result.lanes_x_coords             # [4, 18]  4 个车道线的 x 坐标
-        lanes_x_coords_kl = infer_result.lanes_x_coords_kl       # [4, 18]  卡尔曼滤波后 4 个车道线的 x 坐标
-        lane_center_x_coords = infer_result.lane_center_x_coords # [18]     中心车道线的 x 坐标
-        forward_direct = infer_result.forward_direct             # [2, 2]   实际前进方向
-        predict_direct = infer_result.predict_direct             # [2, 2]   预测前进方向
+        # [18]     所有车道线共用一组 y 坐标
+        lane_y_coords = infer_result.lanes_y_coords
+        # [4, 18]  4 个车道线的 x 坐标
+        lanes_x_coords = infer_result.lanes_x_coords
+        # [4, 18]  卡尔曼滤波后 4 个车道线的 x 坐标
+        lanes_x_coords_kl = infer_result.lanes_x_coords_kl
+        # [18]     中心车道线的 x 坐标
+        lane_center_x_coords = infer_result.lane_center_x_coords
+        # [2, 2]   实际前进方向
+        forward_direct = infer_result.forward_direct
+        # [2, 2]   预测前进方向
+        predict_direct = infer_result.predict_direct
         y_offset = infer_result.y_offset
         z_offset = infer_result.z_offset
 
@@ -278,17 +360,20 @@ class BaseModelInfer:
             lane_x_coords: np.ndarray,
             lane_y_coords: np.ndarray,
             color: tuple = (0, 0, 255),
+            thickness=-1,
         ):
             for i in range(lane_y_coords.shape[0]):
                 x = int(lane_x_coords[i])
                 y = int(lane_y_coords[i])
                 if x != 0:
-                    cv2.circle(img, (x, y), 5, color, -1)
+                    cv2.circle(img, (x, y), 5, color, thickness)
             return img
 
         for i in range(lane_num):
-            img = mark_lane(img, lanes_x_coords[i], lane_y_coords, COLOR_LIST[i])
-            img = mark_lane(img, lanes_x_coords_kl[i], lane_y_coords, COLOR_LIST[i + lane_num])
+            img = mark_lane(
+                img, lanes_x_coords[i], lane_y_coords, COLOR_LIST[i], 1)
+            img = mark_lane(
+                img, lanes_x_coords_kl[i], lane_y_coords, COLOR_LIST[i + lane_num])
 
         # =============
         # 连线车道线 连线
@@ -298,36 +383,41 @@ class BaseModelInfer:
             lane_x_coords: np.ndarray,
             lane_y_coords: np.ndarray,
             color: tuple = (0, 0, 255),
+            thickness=2,
         ):
-            non_zero_index = np.nonzero(lane_x_coords) # 找到非零的点，记录下索引
+            non_zero_index = np.nonzero(lane_x_coords)  # 找到非零的点，记录下索引
             non_zero_x_coords = lane_x_coords[non_zero_index]
             non_zero_y_coords = lane_y_coords[non_zero_index]
             for j in range(non_zero_x_coords.shape[0] - 1):
                 p0 = (non_zero_x_coords[j], non_zero_y_coords[j])
                 p1 = (non_zero_x_coords[j + 1], non_zero_y_coords[j + 1])
-                cv2.line(img, p0, p1, color, 2)
+                cv2.line(img, p0, p1, color, thickness)
             return img
 
         for i in range(lane_num):
-            img = connect_lane(img, lanes_x_coords[i], lane_y_coords, COLOR_LIST[i])
-            img = connect_lane(img, lanes_x_coords_kl[i], lane_y_coords, COLOR_LIST[i + lane_num])
+            img = connect_lane(
+                img, lanes_x_coords[i], lane_y_coords, COLOR_LIST[i], 1)
+            img = connect_lane(
+                img, lanes_x_coords_kl[i], lane_y_coords, COLOR_LIST[i + lane_num])
 
         # =============
         # 行驶区域绘制
         # =============
         # non zero 找到非零的点，记录下索引
-        ll_n0_idxs = np.nonzero(lanes_x_coords[1]) # ll lane left
-        lr_n0_idxs = np.nonzero(lanes_x_coords[2]) # lr lane right
+        ll_n0_idxs = np.nonzero(lanes_x_coords[1])  # ll lane left
+        lr_n0_idxs = np.nonzero(lanes_x_coords[2])  # lr lane right
 
         n0_ll_x_coords = lanes_x_coords[1][ll_n0_idxs]
         n0_ll_y_coords = lane_y_coords[ll_n0_idxs]
-        ll_pts = [[int(x), int(y)] for x, y in zip(n0_ll_x_coords, n0_ll_y_coords)]
+        ll_pts = [[int(x), int(y)]
+                  for x, y in zip(n0_ll_x_coords, n0_ll_y_coords)]
 
         n0_lr_x_coords = lanes_x_coords[2][lr_n0_idxs]
         n0_lr_y_coords = lane_y_coords[lr_n0_idxs]
-        lr_pts = [[int(x), int(y)] for x, y in zip(n0_lr_x_coords, n0_lr_y_coords)]
+        lr_pts = [[int(x), int(y)]
+                  for x, y in zip(n0_lr_x_coords, n0_lr_y_coords)]
 
-        pts = ll_pts + lr_pts[::-1] # 逆序
+        pts = ll_pts + lr_pts[::-1]  # 逆序
         if len(pts) > 0:
             pts_np = np.array(pts, dtype=np.int32)
             mask = np.zeros_like(img, dtype=np.uint8)
@@ -337,28 +427,32 @@ class BaseModelInfer:
         # =============
         # 绘制中心车道线
         # =============
-        img = mark_lane(img, lane_center_x_coords, lane_y_coords, COLOR_LIST[lane_num + lane_num + 1])
-        img = cv2.line(img, tuple(forward_direct[0]), tuple(forward_direct[1]), COLOR_LIST[lane_num * 2 + 2], 2)
+        img = mark_lane(img, lane_center_x_coords, lane_y_coords,
+                        COLOR_LIST[lane_num + lane_num + 1])
+        img = cv2.line(img, tuple(forward_direct[0]), tuple(
+            forward_direct[1]), COLOR_LIST[lane_num * 2 + 2], 2)
 
         # 绘制预测方向(延长)
         if predict_direct[0][1] != 0 and predict_direct[1][1] != 0:
             a, b = np.polyfit(predict_direct[:, 1], predict_direct[:, 0], 1)
             y0 = forward_direct[0][1]
             y1 = forward_direct[1][1]
-            predict_direct = np.array(((int(a * y0 + b), y0), (int(a * y1 + b), y1)), dtype=np.int32)
-        img = cv2.line(img, tuple(predict_direct[0]), tuple(predict_direct[1]), COLOR_LIST[lane_num * 2 + 3], 2)
+            predict_direct = np.array(
+                ((int(a * y0 + b), y0), (int(a * y1 + b), y1)), dtype=np.int32)
+        img = cv2.line(img, tuple(predict_direct[0]), tuple(
+            predict_direct[1]), COLOR_LIST[lane_num * 2 + 3], 2)
 
         # 在图像中输出图像尺寸，偏移距离，预测方向的斜率
         color = (255, 255, 255)
         for line, text in enumerate(
             [
-                f"size  : {img_w},{img_h}",
-                f"y_offset : {y_offset}",
+                f"size  : {img_w},{img_h}", f"y_offset : {y_offset}",
                 f"z_offset : {z_offset:.2f} ({z_offset*180/3.14159:.2f})",
+                f"({lane_y_coords[0]}, {lanes_x_coords[1][0]}, {lane_center_x_coords[0]}, {lanes_x_coords[2][0]})"
             ]
         ):
             # 按行显示，需要根据图像高度调整
-            show_line_num = 20 # 总共可以显示的行数，可以修改
+            show_line_num = 20  # 总共可以显示的行数，可以修改
             base_scale = 30    # 这个数值越大，字体越小
 
             line_height = img_h / show_line_num

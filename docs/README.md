@@ -43,3 +43,13 @@ could not open port /dev/ttyUSB0: [Errno 13] Permission denied: '/dev/ttyUSB0
 sudo usermod -aG dialout ${USER}  # user 替换为自己的用户名
 reboot							              # 必须要重启一下才会生效
 ```
+
+
+## 调试记录
+
+### 车道线自动行进调试
+
+- 2021.08.06:  
+  1. 当前直走没有大问题
+  2. 但是修正航向角时，转向存在转过头的问题，然后只能检测单线，导致无法正确前进
+  3. 需要增加根据单车道线行进的逻辑。是否需要透视变换，把车道线拉垂直？
