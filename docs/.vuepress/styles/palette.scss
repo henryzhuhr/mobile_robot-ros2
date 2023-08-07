@@ -12,7 +12,7 @@ $codeLang: 'c' 'cpp' 'cs' 'css' 'dart' 'docker' 'fs' 'go' 'html' 'java' 'js'
 // Light mode
 :root {
   // brand colors
-//   --c-brand: #3eaf7c;
+  //   --c-brand: #3eaf7c;
   --c-brand: #1188cd; // 11A8CD
   --c-brand-light: #4abf8a;
 
@@ -83,6 +83,7 @@ $codeLang: 'c' 'cpp' 'cs' 'css' 'dart' 'docker' 'fs' 'go' 'html' 'java' 'js'
   --content-width: 1080px;
   --homepage-width: 1080px;
 }
+
 // Dark mode
 html.dark {
   // brand colors
@@ -119,4 +120,23 @@ html.dark {
 
   // code blocks vars
   --code-hl-bg-color: #363b46;
+}
+
+
+.sidebar-item {
+  font-weight: 800 !important;
+  font-size: 1.08rem !important;
+  padding: 1rem 1rem 0.35rem 1rem !important;
+}
+
+.sidebar-item-children .sidebar-item-children .sidebar-item {
+  font-weight: 400 !important;
+  font-size: 1rem !important;
+  padding: 0.35rem 1rem 0.35rem 2rem !important;
+  list-style-type: circle !important;
+
+  &::before {
+    content: '»';
+    position: relative;
+  }
 }
