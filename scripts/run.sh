@@ -14,14 +14,18 @@ rm -rf install build log
 source ~/.bashrc
 source /opt/ros/humble/install/setup.bash
 
-# colcon build
-# colcon build --packages-select vision_lanedet_interfaces
-# colcon build --packages-select car_controller_py
-
-colcon build --packages-select py_launch
-colcon build --packages-select car_controller_py
-
+BUILD_LIST=(
+    "cpp_video_streamer" # 视频流
+    # "vision_lanedet_interfaces"
+    # "car_controller_py"
+    # "py_launch"
+)
+for item in ${BUILD_LIST[@]}; do
+    echo "${LGREEN}Build: ${item}${DEFAULT}"
+    colcon build --packages-select ${item}
+done
 source install/setup.bash
+
 # ros2 launch py_launch run_all_nodes.launch.py
 
 # ros2 run car_controller_py auto_control_lanedet

@@ -17,6 +17,9 @@ class AutoController(Node):
         self.get_logger().info(
             "\033[01;32mCar Auto Controller Node Started\033[0m")
 
+        # 初始化消息通信
+        self.__init_sub_pub()
+
         # -- 打开串口 --
         self.ser_ctr = SerialControl(
             serial_type="ACM",  # ACM 是 stm32 的下载(串口)线
@@ -31,6 +34,22 @@ class AutoController(Node):
                 f"\033[0m{self.ser_ctr.serial_port.name}"
             )
 
+        # 控制模式状态机标识
+        self.control_mode = ControlMode.MANUAL
+        self.get_logger().info(
+            f"\033[01;36mControl Mode Init:\033[0m {ControlMode.MODE_MAP[self.control_mode]}"
+        )
+
+        # 超参数设定
+        # 最大偏移角度限制 15度 (转换后为弧度单位)
+        self.max_z_offset = 15 * math.pi / 180
+
+        # 校准系数，定义为 图像距离/实际距离 (实际操作的时候，图像长 / 测量图像两端在世界中距离)
+        self.calibration_ratio = 1280/60  # 1280px / 60cm
+        # 最大横向偏移限制 0.1m (转换后为像素单位)
+        self.max_y_offset = 0.1*self.calibration_ratio * 40
+
+    def __init_sub_pub(self):
         # -- 订阅手柄消息 ( Joy 是 ROS2 内置的节点 ，读取 /dev/input/js0 ) --
         self.joy_subscription = self.create_subscription(
             Joy, "joy", self.joy_callback, 10
@@ -56,21 +75,6 @@ class AutoController(Node):
             self.reset_button_state_callback,
         )
         self.reset_button_state_timer
-
-        # 控制模式状态机标识
-        self.control_mode = ControlMode.MANUAL
-        self.get_logger().info(
-            f"\033[01;36mControl Mode Init:\033[0m {ControlMode.MODE_MAP[self.control_mode]}"
-        )
-
-        # 超参数设定
-        # 最大偏移角度限制 15度 (转换后为弧度单位)
-        self.max_z_offset = 15 * math.pi / 180
-
-        # 校准系数，定义为 图像距离/实际距离 (实际操作的时候，图像长 / 测量图像两端在世界中距离)
-        self.calibration_ratio = 1280/60  # 1280px / 60cm
-        # 最大横向偏移限制 0.1m (转换后为像素单位)
-        self.max_y_offset = 0.1*self.calibration_ratio * 40
 
     def joy_callback(self, joy_msg: Joy):
         """
@@ -170,7 +174,7 @@ class AutoController(Node):
         # x 和 y 相反 (因为车头朝向和图像坐标系相反)
         # 检测速度过慢，导致需要添加缓冲区，防止修正速度过慢
         x_speed = 0.1  # 设置最大速度 0.3
-        y_speed = -1*y_sign / 1280*50  
+        y_speed = -1*y_sign / 1280*50
         z_speed = z_sign*-0.005
 
         # if abs(z_offset) > self.max_z_offset:  # z_offset 弧度控制

@@ -7,6 +7,8 @@ VideoViewer::VideoViewer(std::string subscribe_topic_name) : Node("video_viewer"
         10,                                                            // qos
         std::bind(&VideoViewer::callback, this, std::placeholders::_1) // callback
     );
+
+    
 }
 VideoViewer::~VideoViewer()
 {

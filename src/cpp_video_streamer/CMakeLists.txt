@@ -46,6 +46,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # [Node] video_reader : 编译 链接 添加ros依赖 安装
 add_executable(video_reader 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/video_reader.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video_reader_callback.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/node_video_reader.cpp
 )
 target_link_libraries(video_reader ${OpenCV_LIBRARIES})

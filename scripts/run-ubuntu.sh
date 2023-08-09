@@ -1,3 +1,5 @@
+source scripts/constant.sh
+
 export WORKDIR=$PWD
 echo "work dir ${WORKDIR}"
 cd $WORKDIR
@@ -13,19 +15,28 @@ cd $WORKDIR/src
 cd $WORKDIR
 # rm -rf build install log
 
+source ~/.bashrc
+source /opt/ros/foxy/setup.bash
+
 eval "$(conda shell.bash hook)"
 conda activate ros2
 
 # pip install empy numpy==1.20
-# colcon build
-# colcon build --packages-select interfaces
-# colcon build --packages-select py_launch
-# colcon build --packages-select cpp_video_streamer
-colcon build --packages-select vision_lanedet_py
-colcon build --packages-select car_controller_py
 
 
-source install/setup.bash
+BUILD_LIST=(
+    # "interfaces" # 统一接口
+    "cpp_video_streamer" # 视频流
+    # "vision_lanedet_interfaces"
+    # "car_controller_py"
+    "py_launch"
+)
+for item in ${BUILD_LIST[@]}; do
+    echo ""
+    echo "${LGREEN}Build: ${item}${DEFAULT}"
+    colcon build --packages-select ${item}
+    source install/setup.bash
+done
 
 which python
 ext_python_path=$(python -c 'import site; print(":".join(site.getsitepackages()))')
@@ -33,8 +44,7 @@ export PYTHONPATH=$PYTHONPATH:$ext_python_path
 
 
 
-ros2 launch py_launch run_control_car.launch.py
-# ros2 launch py_launch run_lanedet.launch.py
+ros2 launch py_launch cpp_video_streamer-video_reader.launch.py
 # ros2 launch py_launch run_all_nodes.launch.py
 
 
