@@ -7,8 +7,8 @@ cd $WORKDIR
 
 # -- 创建包 --
 cd $WORKDIR/src
-# ros2 pkg create --build-type ament_cmake car_controller \
-#     --dependencies rclpy sensor_msgs cv_bridge
+# ros2 pkg create --build-type ament_python control_panel_flask_vue \
+#     --dependencies rclpy std_msgs sensor_msgs cv_bridge
 # exit
 
 # -- 构建运行 --
@@ -26,15 +26,17 @@ conda activate ros2
 
 BUILD_LIST=(
     # "interfaces" # 统一接口
-    "cpp_video_streamer" # 视频流
-    # "vision_lanedet_interfaces"
-    # "car_controller_py"
-    "py_launch"
+    # "video_streamer_cpp" # 视频流
+    # "video_streamer_py" # 视频流
+    # "vision_lanedet_py"  # 视觉 车道线检测
+    "car_controller_py"
+    # "py_launch"
 )
 for item in ${BUILD_LIST[@]}; do
     echo ""
     echo "${LGREEN}Build: ${item}${DEFAULT}"
-    colcon build --packages-select ${item}
+    colcon build --packages-select ${item} \
+        --cmake-args -DCMAKE_BUILD_TYPE=Debug
     source install/setup.bash
 done
 
@@ -42,9 +44,7 @@ which python
 ext_python_path=$(python -c 'import site; print(":".join(site.getsitepackages()))')
 export PYTHONPATH=$PYTHONPATH:$ext_python_path
 
-
-
-ros2 launch py_launch cpp_video_streamer-video_reader.launch.py
-# ros2 launch py_launch run_all_nodes.launch.py
+# ros2 launch py_launch cpp_video_streamer-video_reader.launch.py
+ros2 launch py_launch car.launch.py
 
 

@@ -6,11 +6,10 @@
         "limitSymbolsToIncludedHeaders": false
       },
       "includePath": [
-        "/opt/ros/foxy/include/**",
-        "/usr/include/**",
-        "src/cpp_video_streamer/include",
-        "src/car_controller/include",
-        "install/interfaces/include",
+        "/opt/ros/foxy/include",
+        "/usr/include/opencv4",
+        "src/video_streamer_cpp/include",
+        "install/interfaces/include"
       ],
       "name": "ROS",
       "intelliSenseMode": "gcc-x64",

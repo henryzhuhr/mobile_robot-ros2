@@ -1,14 +1,22 @@
+
+from email import header
 import math
-import time
+
 from typing import Union
+import cv2
+
+import numpy as np
 import rclpy
 from rclpy.node import Node
+from cv_bridge import CvBridge
 from std_msgs.msg import String
-from sensor_msgs.msg import Joy
+from sensor_msgs.msg import Image, Joy
 
-from interfaces.msg import Lanes
+from interfaces.msg import (Lanes, ImageViewer)
 
 from .serial_control.serial_control import SerialControl
+from .decision_planning.vision_lanes import LanesDetectionDecision
+from .utils.image_buffer import ImageViewerBuffer
 
 
 class AutoController(Node):
@@ -49,6 +57,9 @@ class AutoController(Node):
         # 最大横向偏移限制 0.1m (转换后为像素单位)
         self.max_y_offset = 0.1*self.calibration_ratio * 40
 
+        # 设置图像缓冲
+        self.image_viewer_buffer = ImageViewerBuffer(maxsize=1)
+
     def __init_sub_pub(self):
         # -- 订阅手柄消息 ( Joy 是 ROS2 内置的节点 ，读取 /dev/input/js0 ) --
         self.joy_subscription = self.create_subscription(
@@ -56,14 +67,30 @@ class AutoController(Node):
         )
         self.joy_subscription  # prevent unused variable warning
 
+        # -- 订阅 [读取图像] 的消息 --
+        # self.video_reader_subscription = self.create_subscription(
+        #     Image,
+        #     "video_reader",
+        #     self.video_reader_callback,
+        #     10
+        # )
+        # self.video_reader_subscription  # prevent unused variable warning
+
         # -- 订阅 [车道线检测] 的消息 --
         self.lane_detetion_subscription = self.create_subscription(
             Lanes,
-            "lane_result",
+            "vision_lanes",
             self.lanedet_callback,
-            10,
+            10
         )
         self.lane_detetion_subscription  # prevent unused variable warning
+        self.lanes_detection_decision = LanesDetectionDecision()
+
+        # -- 发布 [图像] 的消息 --
+        self.video_viewer_publisher = self.create_publisher(
+            ImageViewer, "video_viewer", 10
+        )
+        self.video_viewer_publisher
 
         # -- 定时器 (按键状态清理) --
         self.button_select_state = ButtonState()
@@ -146,24 +173,27 @@ class AutoController(Node):
 
         if self.control_mode == ControlMode.MANUAL:
             # 20 max
-            set_x = self.ser_ctr.set_speed("x", js_r_x[0] * js_r_x[1] * scale)
+            set_x = self.ser_ctr.set_speed(
+                "x", js_r_x[0] * js_r_x[1] * scale*2)
             set_y = self.ser_ctr.set_speed("y", js_r_y[0] * js_r_y[1] * scale)
             set_z = self.ser_ctr.set_speed("z", js_l_x[0] * js_l_x[1] * scale)
 
             frame, frame_list = self.ser_ctr.send_car()
-            # frame_str=" ".join([f"{i:02X}" for i in frame])# 用于检查发送的字节流
-            # self.get_logger().info(
-            #     f"AXES:{list(joy_msg.axes)} SEND:[{set_x}, {set_y}, {set_z}]"
-            # )
+            frame_str=" ".join([f"{i:02X}" for i in frame])# 用于检查发送的字节流
+            self.get_logger().info(
+                f"AXES:{list(joy_msg.axes)} SEND:[{set_x}, {set_y}, {set_z}]"
+            )
 
-    def lanedet_callback(self, lane_result_msg: Lanes):
+    def lanedet_callback(self, msg: Lanes):
         """ 车道线自动控制的回调 """
 
-        y_offset = lane_result_msg.y_offset  # y_offset: 像素单位
-        z_offset = lane_result_msg.z_offset  # z_offset: 弧度单位
+        # 修正车道线偏移
+        y_offset = msg.y_offset
+        z_offset = msg.z_offset
+        # self.get_logger().info(f"flag:{flag} ({y_offset}, {z_offset}))")
 
-        y_sign, y_val = self.sign(y_offset, 30, 1280)
-        z_sign, z_val = self.sign(z_offset, 0.1, 3.14)
+        y_sign, y_val = self.sign(y_offset, 50, 1280)
+        z_sign, z_val = self.sign(z_offset, 0.5, 3.14)
 
         """
         根据 y_offset 和 z_offset 计算出 x/y/z 轴的速度
@@ -171,6 +201,7 @@ class AutoController(Node):
         2. 然后考虑 y 的误差，调整车的位置
         误差调整的时候，减小 x 的速度
         """
+
         # x 和 y 相反 (因为车头朝向和图像坐标系相反)
         # 检测速度过慢，导致需要添加缓冲区，防止修正速度过慢
         x_speed = 0.1  # 设置最大速度 0.3
@@ -201,19 +232,21 @@ class AutoController(Node):
             self.get_logger().info(
                 f"[AUTO]{frame_str}"
                 f"y_offset:({self.max_y_offset:.4f}) {y_offset:.4f} ,  z_offset:({self.max_z_offset:.4f}) {z_offset:.4f}"
+                f" y[{y_sign}, {y_val}] z[{z_sign}, {z_val}]"
                 f" speed:({x_speed}, {y_speed}, {z_speed}))"
                 f" send:({set_x}, {set_y}, {set_z}))"
 
             )
-        else:
-            # frame, frame_list = self.ser_ctr.send_car(False)
-            frame_str = " "  # .join([f"{i:02X}" for i in frame])  # 用于检查发送的字节流
-            self.get_logger().info(
-                f"[MANUAL]{frame_str}"
-                f" [speed] y:{y_offset} z:{z_offset:.6f}"
-                f" send:({set_x}, {set_y}, {set_z:.6f})"
-                f" y[{y_sign}, {y_val}] z[{z_sign}, {z_val}]"
-            )
+        # else:
+        #     # frame, frame_list = self.ser_ctr.send_car(False)
+        #     frame_str = " "  # .join([f"{i:02X}" for i in frame])  # 用于检查发送的字节流
+        #     self.get_logger().info(
+        #         f"[MANUAL]{frame_str}"
+        #         f" [speed] y:{y_offset} z:{z_offset:.6f}"
+        #         f" y[{y_sign}, {y_val}] z[{z_sign}, {z_val}]"
+        #         f" send:({set_x}, {set_y}, {set_z:.6f})"
+        #     )
+
 
     def reset_button_state_callback(self):
         """重置按键状态"""

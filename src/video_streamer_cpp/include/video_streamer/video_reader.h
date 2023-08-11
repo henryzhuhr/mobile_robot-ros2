@@ -46,7 +46,7 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
 
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr save_frame_subscriber; // 保存图像帧订阅者
-    std::string save_frame_subscriber_topic_name = "video_reader";
+    std::string save_frame_subscriber_topic_name = "video_saver";
 
 private: // 回调函数在单独的文件中实现
     /**

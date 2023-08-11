@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(cpp_video_streamer)
+project(video_streamer_cpp)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -14,6 +14,10 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+
+
+# set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 
 # ========================
 # find dependencies
@@ -56,6 +60,7 @@ install(TARGETS video_reader DESTINATION lib/${PROJECT_NAME})
 # [Node] video_viewer : 编译 链接 添加ros依赖 安装
 add_executable(video_viewer 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/video_viewer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video_viewer_callback.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/node_video_viewer.cpp
 )
 target_link_libraries(video_viewer ${OpenCV_LIBRARIES})

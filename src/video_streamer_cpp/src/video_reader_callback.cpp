@@ -19,22 +19,28 @@ void VideoReader::timer_callback()
             std::string file_name = parameters.save_path + "/frame-" + std::to_string(this->now().nanoseconds()) + ".jpg";
             cv::imwrite(file_name, frame);
         }
+        // cv::resize(frame, frame, cv::Size(frame.cols, int(frame.rows / 2)));
+
+        cv::Mat _frame = frame(cv::Range(int(frame.rows / 8), int(frame.rows * 7 / 8)), cv::Range(0, frame.cols));
+        // cv2::
         // RCLCPP_INFO(this->get_logger(), "Read frame");
         auto message = sensor_msgs::msg::Image();
         message.header.frame_id = "camera";
         message.header.stamp = this->now();
-        message.height = frame.rows;
-        message.width = frame.cols;
+        message.height = _frame.rows;
+        message.width = _frame.cols;
         message.encoding = "bgr8";
         message.is_bigendian = false;
-        message.step = frame.cols * 3;
-        size_t size = frame.cols * frame.rows * 3;
+        message.step = _frame.cols * 3;
+        size_t size = _frame.cols * _frame.rows * 3;
         message.data.resize(size);
-        memcpy(&message.data[0], frame.data, size);
+        memcpy(&message.data[0], _frame.data, size);
 
         // 发布图像
         this->image_publisher->publish(message);
-    }
 
-    // RCLCPP_INFO(this->get_logger(), "Read frame stamp[%d.%d]", message.header.stamp.sec, message.header.stamp.nanosec);
+        // cv::imshow("video_reader", _frame);
+        // cv::waitKey(1);
+        // RCLCPP_INFO(this->get_logger(), "发布图像[%d.%d]", message.header.stamp.sec, message.header.stamp.nanosec);
+    }
 }

@@ -6,7 +6,7 @@ def generate_launch_description():
     return LaunchDescription(
         [
             Node(
-                package="cpp_video_streamer",   # package
+                package="video_streamer_cpp",   # package
                 executable="video_reader",      # node
                 name="t1",
                 parameters=[{

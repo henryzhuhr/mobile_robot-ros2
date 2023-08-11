@@ -8,9 +8,6 @@ from sensor_msgs.msg import Image
 import cv2
 
 class VideoFramePublisher(Node):
-    """
-    MinimalPublisher 类，它继承于 Node
-    """
     def __init__(self):
         
         super().__init__('video_reader_publisher')

@@ -24,6 +24,7 @@ find_package(sensor_msgs REQUIRED)# 消息依赖
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Lanes.msg" # 车道线消息格式
+  "msg/ImageViewer.msg" # 视频显示消息
   DEPENDENCIES std_msgs sensor_msgs
 )
 

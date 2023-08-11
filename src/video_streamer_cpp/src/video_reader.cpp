@@ -3,8 +3,10 @@
 
 VideoReader::VideoReader() : Node("video_reader")
 {
-    time_t now = time(0);
-    tm *ltm = localtime(&now);
+
+    RCLCPP_INFO(this->get_logger(), "\033[01;32mVideo Reader Node Started\033[0m");
+    // time_t now = time(0);
+    // tm *ltm = localtime(&now);
     // RCLCPP_INFO(this->get_logger(), "当前时间: %d-%d-%d %d:%d:%d", 1900 + ltm->tm_year, 1 + ltm->tm_mon, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 
     this->parse_params();   // 解析参数

@@ -1,13 +1,13 @@
 from setuptools import setup
-from setuptools import find_packages # https://zhuanlan.zhihu.com/p/460233022 4.1 包内必须要 __init__.py 文件
 
-package_name = 'vision_lanedet_py'
+package_name = 'control_panel_flask_vue'
+
 setup(
     name=package_name,
     version='0.0.0',
-    packages=find_packages(),
+    packages=[package_name],
     data_files=[
-        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+        ('share/ament_index/resource_index/packages',['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
     install_requires=['setuptools'],
@@ -18,9 +18,7 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts':
-            [
-                "lane_detector = vision_lanedet_py.infer_in_ros:main",
-            ],
+        'console_scripts': [
+        ],
     },
 )
