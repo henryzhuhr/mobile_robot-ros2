@@ -15,7 +15,7 @@ VideoReader::VideoReader() : Node("video_reader")
     /**
      * 创建图像话题发布者
      */
-    this->image_publisher = this->create_publisher<sensor_msgs::msg::Image>(
+    this->image_publisher = this->create_publisher<sensor_msgs::msg::CompressedImage>(
         this->image_publisher_topic_name, // topic_name
         10                                // qos
     );

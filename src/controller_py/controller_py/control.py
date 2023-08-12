@@ -1,22 +1,41 @@
-
-from email import header
 import math
-
 from typing import Union
-import cv2
 
-import numpy as np
 import rclpy
 from rclpy.node import Node
-from cv_bridge import CvBridge
-from std_msgs.msg import String
-from sensor_msgs.msg import Image, Joy
+from sensor_msgs.msg import  Joy
 
 from interfaces.msg import (Lanes, ImageViewer)
 
 from .serial_control.serial_control import SerialControl
 from .decision_planning.vision_lanes import LanesDetectionDecision
 from .utils.image_buffer import ImageViewerBuffer
+
+from .types import SpeedState, ButtonState
+
+
+class ControlState:
+    """控制状态机"""
+
+    MODE_MAP = {
+        0: "STOP",
+        1: "JOY",
+        2: "AUTO_LANE",
+    }
+    STOP = 0  # 停止
+    JOY = 1  # 手柄控制
+    AUTO = 2  # 自动控制，根据视觉算法结果自动修正车辆位置
+
+    def __init__(self):
+        self.speed = SpeedState()
+        self.control_mode = self.JOY
+        self.mode_len = len(self.MODE_MAP)
+
+    def next_mode(self):
+        """ 切换至下一个控制模式 """
+        self.control_mode += 1
+        if self.control_mode >= self.mode_len:
+            self.control_mode = 1
 
 
 class AutoController(Node):
@@ -26,11 +45,11 @@ class AutoController(Node):
             "\033[01;32mCar Auto Controller Node Started\033[0m")
 
         # 初始化消息通信
-        self.__init_sub_pub()
+        self.init_sub_pub()
 
         # -- 打开串口 --
         self.ser_ctr = SerialControl(
-            serial_type="ACM",  # ACM 是 stm32 的下载(串口)线
+            serial_type="USB",
             baudrate=115200,
             frame_len=18-4,
         )
@@ -42,10 +61,10 @@ class AutoController(Node):
                 f"\033[0m{self.ser_ctr.serial_port.name}"
             )
 
-        # 控制模式状态机标识
-        self.control_mode = ControlMode.MANUAL
+        # 小车的控制状态
+        self.control_state = ControlState()
         self.get_logger().info(
-            f"\033[01;36mControl Mode Init:\033[0m {ControlMode.MODE_MAP[self.control_mode]}"
+            f"\033[01;36mControl Mode Init:\033[0m {ControlState.MODE_MAP[self.control_state.control_mode]}"
         )
 
         # 超参数设定
@@ -60,21 +79,26 @@ class AutoController(Node):
         # 设置图像缓冲
         self.image_viewer_buffer = ImageViewerBuffer(maxsize=1)
 
-    def __init_sub_pub(self):
+    def init_sub_pub(self):
+        # -- 定时器 (状态显示) --
+        # self.state_timer = self.create_timer(
+        #     0.01,  # 10ms
+        #     self.state_timer_callback,
+        # )
+        # self.state_timer
+
+        # -- 定时器 (串口发送) --
+        self.serial_sender_timer = self.create_timer(
+            0.1,  # 100ms
+            self.serial_sender_callback,
+        )
+        self.serial_sender_timer
+
         # -- 订阅手柄消息 ( Joy 是 ROS2 内置的节点 ，读取 /dev/input/js0 ) --
         self.joy_subscription = self.create_subscription(
             Joy, "joy", self.joy_callback, 10
         )
         self.joy_subscription  # prevent unused variable warning
-
-        # -- 订阅 [读取图像] 的消息 --
-        # self.video_reader_subscription = self.create_subscription(
-        #     Image,
-        #     "video_reader",
-        #     self.video_reader_callback,
-        #     10
-        # )
-        # self.video_reader_subscription  # prevent unused variable warning
 
         # -- 订阅 [车道线检测] 的消息 --
         self.lane_detetion_subscription = self.create_subscription(
@@ -102,6 +126,21 @@ class AutoController(Node):
             self.reset_button_state_callback,
         )
         self.reset_button_state_timer
+
+    def state_timer_callback(self):
+        """
+        状态显示的回调
+        """
+        pass
+
+    def serial_sender_callback(self):
+        """
+        串口发送的回调
+        """
+        self.ser_ctr.serial_frame.set_speed("x", self.control_state.speed.x)
+        self.ser_ctr.serial_frame.set_speed("y", self.control_state.speed.y)
+        self.ser_ctr.serial_frame.set_speed("z", self.control_state.speed.z)
+        self.ser_ctr.send_car()
 
     def joy_callback(self, joy_msg: Joy):
         """
@@ -152,14 +191,12 @@ class AutoController(Node):
         self.button_select_state.last_state = joy_msg.buttons[8]
 
         if self.button_select_state.flip_cnt == 2 * 2:  # 4次翻转，连续按下两次
-            self.control_mode = (
-                self.control_mode + 1
-            ) % ControlMode.MODE_MAP.__len__()
+            self.control_state.next_mode()
             self.button_select_state.flip_cnt = 0
-            # self.get_logger().info(
-            #     f"\033[01;36mControl Mode Switching:\033[0m"
-            #     f" {ControlMode.MODE_MAP[self.control_mode]}"
-            # )
+            self.get_logger().info(
+                f"\033[01;36mControl Mode Switching:\033[0m"
+                f" {self.control_state.MODE_MAP[self.control_state.control_mode]}"
+            )
 
         # 摇杆(joystick): 美国手
         js_l_x = self.sign(joy_msg.axes[0] * 3.14)  # 左摇杆 x 轴 航向 course
@@ -171,18 +208,15 @@ class AutoController(Node):
 
         scale = 0.2  # 手动控制时建议设置一个系数，防止速度过快
 
-        if self.control_mode == ControlMode.MANUAL:
-            # 20 max
-            set_x = self.ser_ctr.set_speed(
-                "x", js_r_x[0] * js_r_x[1] * scale*2)
-            set_y = self.ser_ctr.set_speed("y", js_r_y[0] * js_r_y[1] * scale)
-            set_z = self.ser_ctr.set_speed("z", js_l_x[0] * js_l_x[1] * scale)
-
-            frame, frame_list = self.ser_ctr.send_car()
-            frame_str=" ".join([f"{i:02X}" for i in frame])# 用于检查发送的字节流
-            self.get_logger().info(
-                f"AXES:{list(joy_msg.axes)} SEND:[{set_x}, {set_y}, {set_z}]"
-            )
+        if (self.control_state.control_mode & self.control_state.JOY) == self.control_state.JOY:
+            self.control_state.speed.x = js_r_x[0] * js_r_x[1] * scale*2
+            self.control_state.speed.y = js_r_y[0] * js_r_y[1] * scale
+            self.control_state.speed.z = js_l_x[0] * js_l_x[1] * scale
+            # frame, frame_list = self.ser_ctr.send_car()
+            # frame_str = " ".join([f"{i:02X}" for i in frame])  # 用于检查发送的字节流
+            # self.get_logger().info(
+            #     f"AXES:{list(joy_msg.axes)} SEND:[{set_x}, {set_y}, {set_z}]"
+            # )
 
     def lanedet_callback(self, msg: Lanes):
         """ 车道线自动控制的回调 """
@@ -190,7 +224,6 @@ class AutoController(Node):
         # 修正车道线偏移
         y_offset = msg.y_offset
         z_offset = msg.z_offset
-        # self.get_logger().info(f"flag:{flag} ({y_offset}, {z_offset}))")
 
         y_sign, y_val = self.sign(y_offset, 50, 1280)
         z_sign, z_val = self.sign(z_offset, 0.5, 3.14)
@@ -202,51 +235,13 @@ class AutoController(Node):
         误差调整的时候，减小 x 的速度
         """
 
-        # x 和 y 相反 (因为车头朝向和图像坐标系相反)
-        # 检测速度过慢，导致需要添加缓冲区，防止修正速度过慢
-        x_speed = 0.1  # 设置最大速度 0.3
-        y_speed = -1*y_sign / 1280*50
-        z_speed = z_sign*-0.005
-
-        # if abs(z_offset) > self.max_z_offset:  # z_offset 弧度控制
-        #     z_speed *= 2  # 以一个较大的速度校正
-        # elif abs(y_offset) > self.max_y_offset:
-        #     y_speed *= 2
-        # if z_val > 0.1:
-        #     x_speed = 0
-        #     y_speed = 0
-        # elif y_val > 150:
-        #     z_speed = 0.0
-        # if y_sign*z_sign<0:z_speed=0
-
-        # if (y_val>20)
-
-        # 设置速度
-        set_x = self.ser_ctr.serial_frame.set_speed("x", x_speed)
-        set_y = self.ser_ctr.serial_frame.set_speed("y", y_speed)
-        set_z = self.ser_ctr.serial_frame.set_speed("z", z_speed)
-
-        if self.control_mode == ControlMode.AUTO:
-            frame, frame_list = self.ser_ctr.send_car()
-            frame_str = " "  # .join([f"{i:02X}" for i in frame])  # 用于检查发送的字节流
+        if (self.control_state.control_mode & self.control_state.AUTO) == self.control_state.AUTO:
+            self.control_state.speed.x = 0.1  # 设置最大速度 0.1
+            self.control_state.speed.y = -1*y_sign / 1280*50
+            self.control_state.speed.z = -0.005*z_sign
             self.get_logger().info(
-                f"[AUTO]{frame_str}"
-                f"y_offset:({self.max_y_offset:.4f}) {y_offset:.4f} ,  z_offset:({self.max_z_offset:.4f}) {z_offset:.4f}"
-                f" y[{y_sign}, {y_val}] z[{z_sign}, {z_val}]"
-                f" speed:({x_speed}, {y_speed}, {z_speed}))"
-                f" send:({set_x}, {set_y}, {set_z}))"
-
-            )
-        # else:
-        #     # frame, frame_list = self.ser_ctr.send_car(False)
-        #     frame_str = " "  # .join([f"{i:02X}" for i in frame])  # 用于检查发送的字节流
-        #     self.get_logger().info(
-        #         f"[MANUAL]{frame_str}"
-        #         f" [speed] y:{y_offset} z:{z_offset:.6f}"
-        #         f" y[{y_sign}, {y_val}] z[{z_sign}, {z_val}]"
-        #         f" send:({set_x}, {set_y}, {set_z:.6f})"
-        #     )
-
+                f"车道线偏移 ({y_offset}, {z_offset:.3f}))"
+                f"  校准速度 ({self.control_state.speed.y :.3f}, {self.control_state.speed.z:.3f})")
 
     def reset_button_state_callback(self):
         """重置按键状态"""
@@ -268,35 +263,10 @@ class AutoController(Node):
         return value_sign, value_abs
 
 
-class ButtonState:
-    """按键状态记录"""
-
-    def __init__(self) -> None:
-        self.last_state = 0  # 记录上一次状态
-        self.flip_cnt = 0  # 状态翻转计数
-
-
-class ControlMode:
-    """控制模式"""
-
-    MODE_MAP = {
-        0: "MANUAL",
-        1: "AUTO_LANE",
-    }
-    MANUAL = 0  # 手动控制
-    AUTO = 1  # 自动控制，根据视觉算法结果自动修正车辆位置
-
-
 def main(args=None):
     rclpy.init(args=args)
-
     node = AutoController()
-
     rclpy.spin(node)
-
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
     node.destroy_node()
     rclpy.shutdown()
 

@@ -7,7 +7,7 @@ from .logger import ColorStr
 from .constants import (
     GRIDING_NUM,
     CLS_NUM_PER_LANE,
-    ROW_ANCHOR,
+    ROW_ANCHOR,CAR_WIDTH_RATIO,
 )
 
 import tensorrt as trt # Test on TRT 8.2.1
@@ -23,7 +23,7 @@ class TensorRTInfer(BaseModelInfer):
     """
     def __init__(
         self,
-        weight_file,
+        weight_file,car_width_ratio: float = CAR_WIDTH_RATIO, # 车宽度 (占宽度百分比)
         griding_num=GRIDING_NUM,
         cls_num_per_lane=CLS_NUM_PER_LANE,
         row_anchor=ROW_ANCHOR,
@@ -34,7 +34,7 @@ class TensorRTInfer(BaseModelInfer):
             3,                             # 3 右右车道线
         ]
     ) -> None:
-        super().__init__(griding_num, cls_num_per_lane, row_anchor, klf_id)
+        super().__init__(car_width_ratio,griding_num, cls_num_per_lane, row_anchor, klf_id)
 
         # Load TRT engine
         self.logger = trt.Logger(trt.Logger.ERROR)

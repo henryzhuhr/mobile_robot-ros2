@@ -15,7 +15,7 @@ class SerialControl:
         "ACM",                 # stm32 的下载(串口)线
     ]
 
-    def __init__(self, serial_type=None, baudrate: int = 115200,frame_len:int=18-4):
+    def __init__(self, serial_type:str=None, baudrate: int = 115200,frame_len:int=18-4):
         if (serial_type is not None) and (serial_type in SerialControl.SUPPORTED_SERIAL_TYPES):
             tye_open_serial = [serial_type]
         else:

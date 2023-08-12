@@ -3,7 +3,7 @@
 #include <string>
 #include "rclcpp/rclcpp.hpp"
 #include <opencv2/opencv.hpp>
-#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
 #include <std_msgs/msg/bool.hpp>
 
 // 读取视频类的参数
@@ -40,7 +40,12 @@ private:
     void parse_params();
 
 private:
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher; // 图像发布者
+    /**
+     * @brief 读取视频帧
+     *
+     */
+    const int img_quality = 30; // 图像质量 压缩比率 0-100
+    rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr image_publisher; // 图像发布者
     std::string image_publisher_topic_name = "video_reader";
 
     rclcpp::TimerBase::SharedPtr timer_;

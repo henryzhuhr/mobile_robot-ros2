@@ -12,7 +12,7 @@ pip3 install $public_dir/pyserial-3.5-py2.py3-none-any.whl
 rm -rf install build log
 
 source ~/.bashrc
-source /opt/ros/humble/install/setup.bash
+source /opt/ros/foxy/install/setup.bash
 
 BUILD_LIST=(
     "cpp_video_streamer" # 视频流

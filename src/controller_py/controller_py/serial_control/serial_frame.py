@@ -14,6 +14,7 @@ class SerialFrame(ABC):
         self.tail__ = [struct.pack("B", d) for d in [0xFF]]
         self.data_len = data_len
         self.data: List[bytes] = [b'\x00'] * self.data_len
+        
 
     def get_byte_frame(self):
         check_sum = 0
@@ -22,6 +23,7 @@ class SerialFrame(ABC):
         check_sum = struct.pack("B", check_sum & 0xFF)
 
         return [*self.header, *self.data, check_sum, * self.tail__]
+    
 
 
 class CarSerialFrame(SerialFrame):

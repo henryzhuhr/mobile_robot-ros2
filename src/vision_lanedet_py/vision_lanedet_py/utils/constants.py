@@ -5,6 +5,7 @@
 CLS_NUM_PER_LANE = 18
 GRIDING_NUM = 200  # same as `configs/culane.py`
 ROW_ANCHOR = [121, 131, 141, 150, 160, 170, 180, 189, 199, 209, 219, 228, 238, 248, 258, 267, 277, 287]
+CAR_WIDTH_RATIO = 0.5
 
 COLOR_MAP = {
     "yellow": (255, 255, 0),     # 0 左左车道线

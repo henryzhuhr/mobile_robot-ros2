@@ -13,7 +13,7 @@ def generate_launch_description():
         executable="video_reader",
         name="videoR",
         parameters=[{
-            "source": "camera2", # camera or file/url
+            "source": "camera2",  # camera or file/url
         }],
     )
     cpp_video_viewer = Node(
@@ -21,17 +21,17 @@ def generate_launch_description():
         executable="video_viewer",
         name="videoV",
     )
-    car_control_node= Node(                 # 「节点」 车辆控制
-        package="car_controller_py",
-        executable="auto_control",
-        name="car_controller_py",
+    car_control_node = Node(                 # 「节点」 车辆控制
+        package="controller_py",
+        executable="control",
+        name="control",
     )
     joy_node = Node(                        # 「节点」 手柄控制
         package="joy",
         executable="joy_node",
-        name="joy_node",
+        name="joy",
     )
-    
+
     """
     trtexec --fp16 \
     --onnx=public/weights/train/ufld-final-INT32.onnx \

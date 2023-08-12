@@ -1,7 +1,7 @@
 from setuptools import setup
 from setuptools import find_packages # https://zhuanlan.zhihu.com/p/460233022 4.1 包内必须要 __init__.py 文件
 
-package_name = 'car_controller_py'
+package_name = 'controller_py'
 
 setup(
     name=package_name,
@@ -21,8 +21,7 @@ setup(
     entry_points={
         'console_scripts':
             [
-                f"auto_control = {package_name}.auto_control:main",
-                f"manual_control = {package_name}.manual_control:main",
+                f"control = {package_name}.control:main",
             ],
     },
 )
