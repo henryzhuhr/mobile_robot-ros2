@@ -1,7 +1,8 @@
+import numpy as np
 from interfaces.msg import Lanes
-from .utils.trt_infer import TensorRTInfer, InferResult
+# from .utils.trt_infer import TensorRTInfer, InferResult
+from .utils.onnx_infer import ONNXInfer, InferResult
 import cv2
-import time
 from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 from rclpy.node import Node
@@ -21,6 +22,11 @@ os.environ["LD_LIBRARY_PATH"] = ":".join(
     [os.getenv("LD_LIBRARY_PATH"), f"{tensorrt_home}/lib", f"{cuda_home}/lib64"])
 
 # ROS 专用的图像格式
+
+camera_matrix = np.array([[309.90395107, 0.00000000e+00, 300.39021399], [0.00000000e+00,
+                         302.16360458, 246.21441832], [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+distortion_coefficients = np.array(
+    [-0.32984359,  0.11556734, -0.00545855,  0.00248696, -0.01897801])
 
 
 class LaneDetector(Node):
@@ -56,7 +62,7 @@ class LaneDetector(Node):
             "weight_file").get_parameter_value().string_value
         self.get_logger().info(
             f"\033[01;32mLoad TRT Engine\033[0m:  {trtengine_weight}")
-        self.model_infer = TensorRTInfer(trtengine_weight)
+        self.model_infer = ONNXInfer(trtengine_weight)
         self.get_logger().info(
             f"\033[01;32mLoad TRT Engine Sucessffully\033[0m")
 
@@ -66,6 +72,10 @@ class LaneDetector(Node):
 
         self.lock = True
         img = self.cv_bridge.compressed_imgmsg_to_cv2(msg)
+        
+        # img = cv2.resize(img, (640, 480))
+        # img = cv2.undistort(img, camera_matrix, distortion_coefficients)
+        # img = img[:, :600]  # 裁切下半部分
 
         infer_result: InferResult = self.model_infer.infer(img)
 
@@ -100,11 +110,12 @@ class LaneDetector(Node):
         lane_result_msg.z_offset = float(z_offset)
 
         self.lane_result_pub.publish(lane_result_msg)
+        cv2.imshow("video_reader", img)
+        cv2.waitKey(1)
 
         self.lock = False
 
-        cv2.imshow("video_reader", img)
-        cv2.waitKey(1)
+        
 
 
 def main(args=None):

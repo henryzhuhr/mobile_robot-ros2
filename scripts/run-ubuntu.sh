@@ -27,7 +27,7 @@ conda activate ros2
 BUILD_LIST=(
     # "interfaces" # 统一接口
     "video_streamer_cpp" # 视频流
-    "vision_lanedet_py"     # 视觉 车道线检测
+    # "vision_lanedet_py"     # 视觉 车道线检测
     # "controller_py"
     # "py_launch"
 )

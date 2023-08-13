@@ -37,9 +37,10 @@ def generate_launch_description():
     --onnx=public/weights/train/ufld-final-INT32.onnx \
     --saveEngine=public/weights/train/ufld-final-INT32.engine
     """
-    weight_file = "public/weights/train/ufld-final-INT32.engine"
+    weight_file = "public/weights/culane_18-INT32.onnx"
     if platform.machine() == "aarch64":
-        weight_file = "weights/ufld-final-INT32-jetsonnano.engine"
+        # weight_file = "weights/ufld-final-INT32-jetsonnano.engine"
+        weight_file = "public/weights/culane_18-INT32.onnx"
     vision_lanedet_node = Node(             # 「节点」 视觉 车道线检测
         package="vision_lanedet_py",
         executable="lane_detector",

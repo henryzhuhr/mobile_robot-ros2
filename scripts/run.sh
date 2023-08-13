@@ -15,19 +15,25 @@ source ~/.bashrc
 source /opt/ros/foxy/install/setup.bash
 
 BUILD_LIST=(
-    "cpp_video_streamer" # 视频流
-    # "vision_lanedet_interfaces"
-    # "car_controller_py"
-    # "py_launch"
+    "interfaces" # 统一接口
+    "video_streamer_cpp" # 视频流
+    "vision_lanedet_py"     # 视觉 车道线检测
+    "controller_py"
+    "py_launch"
 )
 for item in ${BUILD_LIST[@]}; do
+    echo ""
     echo "${LGREEN}Build: ${item}${DEFAULT}"
-    colcon build --packages-select ${item}
+    colcon build --packages-select ${item} \
+        --cmake-args -DCMAKE_BUILD_TYPE=Debug
+    source install/setup.bash
 done
 source install/setup.bash
 
-# ros2 launch py_launch run_all_nodes.launch.py
 
-# ros2 run car_controller_py auto_control_lanedet
+which python
+ext_python_path=$(python -c 'import site; print(":".join(site.getsitepackages()))')
+export PYTHONPATH=$PYTHONPATH:$ext_python_path
 
-ros2 launch py_launch run_manul_control_car.launch.py
+# ros2 launch py_launch cpp_video_streamer-video_reader.launch.py
+ros2 launch py_launch car.launch.py

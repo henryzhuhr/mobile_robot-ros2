@@ -184,11 +184,11 @@ class AutoController(Node):
         ```
         """
 
-        # 按键 select [8] 翻转计数
+        # 按键 select 翻转计数  有线手柄 8 无线手柄 7
         # TODO 优化: 记录上升沿和下降沿为一次高电平触发，而不是翻转计数
-        if joy_msg.buttons[8] != self.button_select_state.last_state:
+        if joy_msg.buttons[7] != self.button_select_state.last_state:
             self.button_select_state.flip_cnt += 1
-        self.button_select_state.last_state = joy_msg.buttons[8]
+        self.button_select_state.last_state = joy_msg.buttons[7]
 
         if self.button_select_state.flip_cnt == 2 * 2:  # 4次翻转，连续按下两次
             self.control_state.next_mode()
@@ -198,10 +198,16 @@ class AutoController(Node):
                 f" {self.control_state.MODE_MAP[self.control_state.control_mode]}"
             )
 
-        # 摇杆(joystick): 美国手
+        # 有线手柄 摇杆(joystick): 美国手
+        # js_l_x = self.sign(joy_msg.axes[0] * 3.14)  # 左摇杆 x 轴 航向 course
+        # js_l_y = self.sign(joy_msg.axes[1])        # 左摇杆 y 轴 升降 lift  (禁用)
+        # js_r_x = self.sign(joy_msg.axes[2] * 1.3)  # 右摇杆 x 轴 前后 forwardback
+        # js_r_y = self.sign(joy_msg.axes[3] * 1.3)  # 右摇杆 y 轴 左右 leftright
+
+        # 无线手柄 摇杆(joystick): 美国手
         js_l_x = self.sign(joy_msg.axes[0] * 3.14)  # 左摇杆 x 轴 航向 course
         js_l_y = self.sign(joy_msg.axes[1])        # 左摇杆 y 轴 升降 lift  (禁用)
-        js_r_x = self.sign(joy_msg.axes[2] * 1.3)  # 右摇杆 x 轴 前后 forwardback
+        js_r_x = self.sign(joy_msg.axes[4] * 1.3)  # 右摇杆 x 轴 前后 forwardback
         js_r_y = self.sign(joy_msg.axes[3] * 1.3)  # 右摇杆 y 轴 左右 leftright
 
         # -----------
@@ -209,13 +215,13 @@ class AutoController(Node):
         scale = 0.2  # 手动控制时建议设置一个系数，防止速度过快
 
         if (self.control_state.control_mode & self.control_state.JOY) == self.control_state.JOY:
-            self.control_state.speed.x = js_r_x[0] * js_r_x[1] * scale*2
+            self.control_state.speed.x = js_r_x[0] * js_r_x[1] * scale
             self.control_state.speed.y = js_r_y[0] * js_r_y[1] * scale
-            self.control_state.speed.z = js_l_x[0] * js_l_x[1] * scale
-            # frame, frame_list = self.ser_ctr.send_car()
-            # frame_str = " ".join([f"{i:02X}" for i in frame])  # 用于检查发送的字节流
+            self.control_state.speed.z = js_l_x[0] * js_l_x[1] * scale*3
             # self.get_logger().info(
-            #     f"AXES:{list(joy_msg.axes)} SEND:[{set_x}, {set_y}, {set_z}]"
+            #     f"AXES:{list(joy_msg.axes)} "
+            #     f"BUTTON:{list(joy_msg.buttons)} "
+            #     f"SEND:[{self.control_state.speed.x}, {self.control_state.speed.y}, { self.control_state.speed.z}]"
             # )
 
     def lanedet_callback(self, msg: Lanes):

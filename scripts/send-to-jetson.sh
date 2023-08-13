@@ -6,7 +6,7 @@ project_name=${PWD##*/}
 
 SOURCE_DIR=$parent_dir/$project_name
 SOURCE_DIR=$PWD/ros
-TARGET_DIR="nano@$IP_Jetson_nano:~/project/mobile_robot"
+TARGET_DIR="nano@$IP_Jetson_nano:~/project/mobile_robot-ros2"
 
 echo " --> $SOURCE_DIR $TARGET_DIR"
 
@@ -18,10 +18,15 @@ echo " --> $SOURCE_DIR $TARGET_DIR"
 #     --exclude="ros/build/" --exclude="ros/install/" --exclude="ros/log/" \
 #     $SOURCE_DIR $TARGET_DIR
 
-rsync -azv $PWD/docker $TARGET_DIR
-rsync -azv \
-    --exclude="__pycache__/" \
-    --exclude="ros/build/" --exclude="ros/install/" --exclude="ros/log/" --exclude="ros/.vscode/" \
-    $PWD/ros $TARGET_DIR
 
+# rsync -azv \
+#     --exclude="__pycache__/" \
+#     --exclude="ros/build/" --exclude="ros/install/" --exclude="ros/log/" --exclude="ros/.vscode/" \
+#     $PWD/src $TARGET_DIR
+
+
+rsync -azv $PWD/docker $TARGET_DIR
+# rsync -azv $PWD/src $TARGET_DIR
+# rsync -azv $PWD/public $TARGET_DIR
+rsync -azv $PWD/scripts $TARGET_DIR
 

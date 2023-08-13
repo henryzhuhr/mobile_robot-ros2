@@ -135,7 +135,8 @@ class BaseModelInfer:
         # lanes_x_coords[1] = np.zeros_like(left__lane_x, dtype=np.int32)
         # lanes_x_coords[2] = np.zeros_like(right_lane_x, dtype=np.int32)
 
-        lanes_x_coords_kl = np.zeros_like(lanes_x_coords, dtype=np.int32) # [4,18]
+        lanes_x_coords_kl = np.zeros_like(lanes_x_coords, dtype=np.int32)  # [4,18]
+
 
         # 卡尔曼滤波
         if is_kalman:
@@ -151,13 +152,34 @@ class BaseModelInfer:
 
         # 计算预测方向的斜率
         (
+            left_slope,    # 斜率 0.75
+            (left_x0, left_y0), # 中心车道线，最底部的点
+            (left_x1, left_y1), # 中心车道线，最底部的上一个点
+        ) = BaseModelInfer.compute_slope(lanes_x_coords[1], lane_y_coords)
+
+        # 计算预测方向的斜率
+        (
+            right_slope,    # 斜率 -0.7
+            (right_x0, right_y0), # 中心车道线，最底部的点
+            (right_x1, right_y1), # 中心车道线，最底部的上一个点
+        ) = BaseModelInfer.compute_slope(lanes_x_coords[2], lane_y_coords)
+
+        # 计算预测方向的斜率
+        (
             slope,    # 斜率
             (x0, y0), # 中心车道线，最底部的点
             (x1, y1), # 中心车道线，最底部的上一个点
-        ) = self.compute_slope(lane_center_x_coords, lane_y_coords)
-
-        # 计算方向角误差
-        z_offset = np.arctan(slope)
+        ) = BaseModelInfer.compute_slope(lane_center_x_coords, lane_y_coords)
+        print("slope", left_slope, right_slope, slope)
+        print("left_x0", left_x0)
+        print("right_x0", right_x0)
+        # 计算方向角偏移
+        if (left_slope == 0 and right_slope != 0) :
+            z_offset = np.arctan(right_slope + 0.7)
+        elif (left_slope != 0 and right_slope == 0) :
+            z_offset = np.arctan(left_slope - 0.75)
+        else:
+            z_offset = np.arctan(slope)
 
         # 实际的前进方向
         # TODO ，需要实际标定，目前使用图像中心线作为前进方向
@@ -170,27 +192,12 @@ class BaseModelInfer:
 
         # 计算偏移距离，取最底部的点的 x 坐标计算，用像素表示，(以图像中心为原点，向右为正方向)，
         # 对应到小车就是 y 轴方向
-        if x0 == 0: # 如果不存在中心车道线，则 y_offset = 0
+        if (left_x0 == 0 and right_x0 == 0):
             y_offset = np.int32(0)
-            is_lx_all_zero = True
-            for i in range(lanes_x_coords[1].shape[0]):
-                if lanes_x_coords[1][i] != 0:
-                    is_lx_all_zero = False
-                    break
-            is_rx_all_zero = True
-            for i in range(lanes_x_coords[2].shape[0]):
-                if lanes_x_coords[2][i] != 0:
-                    is_rx_all_zero = False
-                    break
-
-            if is_lx_all_zero == False:   # 左车道线存在，基于左车道线判断
-                predict_direct_x = lanes_x_coords[1][0] + (594 - 148)
-                y_offset = np.int32(predict_direct_x - forward_direct[0][0])
-            elif is_rx_all_zero == False: # 右车道线存在，基于右车道线判断
-                predict_direct_x = lanes_x_coords[2][0] - (1040 - 594)
-                y_offset = np.int32(predict_direct_x - forward_direct[0][0])
-            else:
-                y_offset = np.int32(0)
+        elif (left_x0 != 0 and right_x0 == 0):
+            y_offset = np.int32(left_x0 - 20)
+        elif (left_x0 == 0 and right_x0 != 0):
+            y_offset = np.int32(right_x0 - 580)
         else:
             y_offset = np.int32(predict_direct[0][0] - forward_direct[0][0])
 
@@ -347,7 +354,7 @@ class BaseModelInfer:
             a, b, c = np.polyfit(y, x, 2)
 
             y0 = y[0]
-            y1 = y[1]
+            y1 = y[4]
 
             x0 = a * y0 * y0 + b * y0 + c
             x1 = a * y1 * y1 + b * y1 + c
@@ -411,7 +418,7 @@ class BaseModelInfer:
             return img
 
         for i in range(lane_num):
-            img = mark_lane(img, lanes_x_coords[i], lane_y_coords, COLOR_LIST[i], 1)
+            img = mark_lane(img, lanes_x_coords[i], lane_y_coords, COLOR_LIST[i], 5)
             img = mark_lane(img, lanes_x_coords_kl[i], lane_y_coords, COLOR_LIST[i + lane_num])
 
         # =============
@@ -424,7 +431,7 @@ class BaseModelInfer:
             color: tuple = (0, 0, 255),
             thickness=2,
         ):
-            non_zero_index = np.nonzero(lane_x_coords) # 找到非零的点，记录下索引
+            non_zero_index = np.nonzero(lane_x_coords)  # 找到非零的点，记录下索引
             non_zero_x_coords = lane_x_coords[non_zero_index]
             non_zero_y_coords = lane_y_coords[non_zero_index]
             for j in range(non_zero_x_coords.shape[0] - 1):
@@ -483,8 +490,8 @@ class BaseModelInfer:
             ]
         ):
             # 按行显示，需要根据图像高度调整
-            show_line_num = 20 # 总共可以显示的行数，可以修改
-            base_scale = 30    # 这个数值越大，字体越小
+            show_line_num = 20  # 总共可以显示的行数，可以修改
+            base_scale = 30     # 这个数值越大，字体越小
 
             line_height = img_h / show_line_num
             scale = line_height / base_scale
