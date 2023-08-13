@@ -23,10 +23,13 @@ os.environ["LD_LIBRARY_PATH"] = ":".join(
 
 # ROS 专用的图像格式
 
-camera_matrix = np.array([[309.90395107, 0.00000000e+00, 300.39021399], [0.00000000e+00,
-                         302.16360458, 246.21441832], [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
-distortion_coefficients = np.array(
-    [-0.32984359,  0.11556734, -0.00545855,  0.00248696, -0.01897801])
+# camera_matrix = np.array([[309.90395107, 0.00000000e+00, 300.39021399], [0.00000000e+00,
+#                          302.16360458, 246.21441832], [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+# distortion_coefficients = np.array(
+#     [-0.32984359,  0.11556734, -0.00545855,  0.00248696, -0.01897801])
+
+camera_matrix = np.array([[654.70620869, 0.00000000e+00, 620.18116133], [0.00000000e+00, 656.66098208, 433.29648979], [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+distortion_coefficients = np.array([-0.32841624,  0.10118464, 0.00383333,  0.00071582, -0.01392005])
 
 
 class LaneDetector(Node):
@@ -74,8 +77,8 @@ class LaneDetector(Node):
         img = self.cv_bridge.compressed_imgmsg_to_cv2(msg)
         
         # img = cv2.resize(img, (640, 480))
-        # img = cv2.undistort(img, camera_matrix, distortion_coefficients)
-        # img = img[:, :600]  # 裁切下半部分
+        img = cv2.undistort(img, camera_matrix, distortion_coefficients)
+        img = img[250:, :1200]  # 裁切下半部分
 
         infer_result: InferResult = self.model_infer.infer(img)
 
@@ -110,7 +113,7 @@ class LaneDetector(Node):
         lane_result_msg.z_offset = float(z_offset)
 
         self.lane_result_pub.publish(lane_result_msg)
-        cv2.imshow("video_reader", img)
+        cv2.imshow("lane_det", img)
         cv2.waitKey(1)
 
         self.lock = False

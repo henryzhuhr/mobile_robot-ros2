@@ -170,14 +170,14 @@ class BaseModelInfer:
             (x0, y0), # 中心车道线，最底部的点
             (x1, y1), # 中心车道线，最底部的上一个点
         ) = BaseModelInfer.compute_slope(lane_center_x_coords, lane_y_coords)
-        print("slope", left_slope, right_slope, slope)
-        print("left_x0", left_x0)
-        print("right_x0", right_x0)
+        # print("slope", left_slope, right_slope, slope)
+        # print("left_x0", left_x0)
+        # print("right_x0", right_x0)
         # 计算方向角偏移
         if (left_slope == 0 and right_slope != 0) :
-            z_offset = np.arctan(right_slope + 0.7)
+            z_offset = np.arctan(right_slope + 0.75)
         elif (left_slope != 0 and right_slope == 0) :
-            z_offset = np.arctan(left_slope - 0.75)
+            z_offset = np.arctan(left_slope - 0.8)
         else:
             z_offset = np.arctan(slope)
 
@@ -195,9 +195,9 @@ class BaseModelInfer:
         if (left_x0 == 0 and right_x0 == 0):
             y_offset = np.int32(0)
         elif (left_x0 != 0 and right_x0 == 0):
-            y_offset = np.int32(left_x0 - 20)
+            y_offset = np.int32(left_x0 - 40)
         elif (left_x0 == 0 and right_x0 != 0):
-            y_offset = np.int32(right_x0 - 580)
+            y_offset = np.int32(right_x0 - 1160)
         else:
             y_offset = np.int32(predict_direct[0][0] - forward_direct[0][0])
 
