@@ -14,14 +14,10 @@ void VideoReader::timer_callback()
 #ifdef DEBUG
         RCLCPP_INFO(this->get_logger(), "[当前参数] is_save_frame = %s", this->is_save_frame);
 #endif
-        if (this->is_save_frame)
-        {
-            std::string file_name = parameters.save_path + "/frame-" + std::to_string(this->now().nanoseconds()) + ".jpg";
-            cv::imwrite(file_name, frame);
-        }
+
         // cv::resize(frame, frame, cv::Size(frame.cols, int(frame.rows / 2)));
 
-        cv::Mat _frame = frame(cv::Range(int(frame.rows / 8), int(frame.rows * 7 / 8)), cv::Range(0, frame.cols));
+        // cv::Mat _frame = frame(cv::Range(int(frame.rows / 8), int(frame.rows * 7 / 8)), cv::Range(0, frame.cols));
         // cv2::
         // RCLCPP_INFO(this->get_logger(), "Read frame");
 
@@ -48,7 +44,7 @@ void VideoReader::timer_callback()
         // std::vector<int> compression_params;
         // compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
         // compression_params.push_back(80); // 压缩比率 0-100
-        cv::imencode(".jpg", _frame, message.data, {cv::IMWRITE_JPEG_QUALITY, this->img_quality});
+        cv::imencode(".jpg", frame, message.data, {cv::IMWRITE_JPEG_QUALITY, this->img_quality});
 
         // 发布图像
         this->image_publisher->publish(message);
@@ -56,5 +52,15 @@ void VideoReader::timer_callback()
         // cv::imshow("video_reader", _frame);
         // cv::waitKey(1);
         // RCLCPP_INFO(this->get_logger(), "发布图像[%d.%d]", message.header.stamp.sec, message.header.stamp.nanosec);
+        if (this->is_save_frame)
+        {
+            std::string file_name = parameters.save_path + "/frame-" +
+                                    std::to_string(static_cast<int>(this->now().seconds()))  + ".jpg";
+            // std::string file_name = parameters.save_path + "/frame-" +
+            //                         std::to_string(static_cast<int>(this->now().seconds())) + "-" + std::to_string(this->now().nanoseconds()) + ".jpg";
+            cv::imwrite(file_name, frame);
+            cv::imshow("video_saver", frame);
+            cv::waitKey(1);
+        }
     }
 }

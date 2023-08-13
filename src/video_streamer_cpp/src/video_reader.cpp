@@ -39,8 +39,18 @@ VideoReader::VideoReader() : Node("video_reader")
         std::bind(&VideoReader::timer_callback, this)           // callback : User-defined callback function.
     );
 
+    // 获取当前时间
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char buff[1024];
+    snprintf(buff, sizeof(buff), "%d%02d%02d_%02d%02d%02d", 1900 + ltm->tm_year, 1 + ltm->tm_mon, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+
     // 创建文件夹，用于保存视频帧
-    system(("mkdir -p " + parameters.save_path).c_str());
+    std::string time_str(buff);
+    this->parameters.save_path = this->parameters.save_path +"-"+ time_str.substr(0, time_str.size());
+    RCLCPP_INFO(this->get_logger(), "当前时间 [%d,%d]%s", time_str.size(), time_str.length(), time_str.substr(0, time_str.size()).c_str());
+    RCLCPP_INFO(this->get_logger(), "保存 %s", this->parameters.save_path.c_str());
+    system(("mkdir -p " + this->parameters.save_path).c_str());
 }
 VideoReader::~VideoReader()
 {
@@ -113,7 +123,7 @@ void VideoReader::init_video_cap()
             // video_cap.set(cv::CAP_PROP_BRIGHTNESS, 1); // 亮度 1
             // video_cap.set(cv::CAP_PROP_CONTRAST, 40);      // 对比度 40
             // video_cap.set(cv::CAP_PROP_SATURATION, 50);    // 饱和度 50
-            // video_cap.set(cv::CAP_PROP_HUE, 50);           // 色调 50
+            // video_cap.set(cv::CAP_PROP_HUE, 50);           // 色调 50-
             // video_cap.set(cv::CAP_PROP_EXPOSURE, 50);      // 曝光 50
             // video_cap.set(cv::CAP_PROP_FOURCC, 50);        // FOURCC编解码器的4个字符代码。
             // video_cap.set(cv::CAP_PROP_POS_AVI_RATIO, 0);  // 视频文件的相对位置：0-胶片开始，1-胶片结束。

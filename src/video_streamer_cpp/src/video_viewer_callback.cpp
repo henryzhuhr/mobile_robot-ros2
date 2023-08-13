@@ -36,14 +36,16 @@ void VideoViewer::video_viewer_timerr_callback()
                     RCLCPP_WARN(this->get_logger(), "[无法绘制车道线] %s", e.what());
                 }
             }
-            cv::imshow("video_viewer-buffer", buffer_data->img);
-            cv::waitKey(1);
+            // cv::imshow("video_viewer-buffer", buffer_data->img);
+            // cv::waitKey(1);
         }
     }
 }
+
 void VideoViewer::video_viewer_callback(const sensor_msgs::msg::CompressedImage::SharedPtr msg)
 {
     cv::Mat frame = cv::imdecode(cv::Mat(msg->data), 1);
+
     BufferData buffer_data;
     buffer_data.header = msg->header;
     buffer_data.img = frame;
