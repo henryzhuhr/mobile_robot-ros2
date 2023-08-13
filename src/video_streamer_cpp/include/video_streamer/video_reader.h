@@ -26,7 +26,7 @@ private:
     cv::VideoCapture video_cap;
     cv::Mat frame;
     VideoReaderParams parameters; // 读取视频类的参数
-    bool is_save_frame = false;   // 是否保存图像帧信号
+    bool is_save_frame = true;   // 是否保存图像帧信号
 
 private:
     /**

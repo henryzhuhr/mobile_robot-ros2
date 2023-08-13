@@ -3,9 +3,9 @@ from typing import Union
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import  Joy
+from sensor_msgs.msg import Joy
 
-from interfaces.msg import (Lanes, ImageViewer)
+from interfaces.msg import (Lanes, RuntimeState)
 
 from .serial_control.serial_control import SerialControl
 from .decision_planning.vision_lanes import LanesDetectionDecision
@@ -18,24 +18,30 @@ class ControlState:
     """控制状态机"""
 
     MODE_MAP = {
-        0: "STOP",
-        1: "JOY",
-        2: "AUTO_LANE",
+        0x00: "STOP",
+        0x01: "JOY",
+        0x02: "AUTO_LANE",
     }
-    STOP = 0  # 停止
-    JOY = 1  # 手柄控制
-    AUTO = 2  # 自动控制，根据视觉算法结果自动修正车辆位置
+    STOP = 0x00  # 停止
+    JOY = 0x01  # 手柄控制
+    AUTO = 0x02  # 自动控制，根据视觉算法结果自动修正车辆位置
 
     def __init__(self):
+        self.runtimestate = RuntimeState()
+        self.runtimestate.mode = 0x01  # uint8
+        self.runtimestate.modules = 0x00  # uint64
         self.speed = SpeedState()
-        self.control_mode = self.JOY
-        self.mode_len = len(self.MODE_MAP)
 
     def next_mode(self):
         """ 切换至下一个控制模式 """
-        self.control_mode += 1
-        if self.control_mode >= self.mode_len:
-            self.control_mode = 1
+        """
+        8 4 2 1
+        _ _ _ _
+        """
+        if self.runtimestate.mode == 0x02:
+            self.runtimestate.mode = 0x01
+        else:
+            self.runtimestate.mode = self.runtimestate.mode << 1
 
 
 class AutoController(Node):
@@ -49,7 +55,7 @@ class AutoController(Node):
 
         # -- 打开串口 --
         self.ser_ctr = SerialControl(
-            serial_type="USB",
+            serial_type="ACM",
             baudrate=115200,
             frame_len=18-4,
         )
@@ -64,7 +70,7 @@ class AutoController(Node):
         # 小车的控制状态
         self.control_state = ControlState()
         self.get_logger().info(
-            f"\033[01;36mControl Mode Init:\033[0m {ControlState.MODE_MAP[self.control_state.control_mode]}"
+            f"\033[01;36mControl Mode Init:\033[0m {ControlState.MODE_MAP[self.control_state.runtimestate.mode]}"
         )
 
         # 超参数设定
@@ -80,12 +86,12 @@ class AutoController(Node):
         self.image_viewer_buffer = ImageViewerBuffer(maxsize=1)
 
     def init_sub_pub(self):
-        # -- 定时器 (状态显示) --
-        # self.state_timer = self.create_timer(
-        #     0.01,  # 10ms
-        #     self.state_timer_callback,
-        # )
-        # self.state_timer
+        # -- 定时器 (状态显示与状态发送) --
+        self.state_timer = self.create_timer(
+            0.1,  # 100ms
+            self.state_timer_callback,
+        )
+        self.state_timer
 
         # -- 定时器 (串口发送) --
         self.serial_sender_timer = self.create_timer(
@@ -110,12 +116,6 @@ class AutoController(Node):
         self.lane_detetion_subscription  # prevent unused variable warning
         self.lanes_detection_decision = LanesDetectionDecision()
 
-        # -- 发布 [图像] 的消息 --
-        self.video_viewer_publisher = self.create_publisher(
-            ImageViewer, "video_viewer", 10
-        )
-        self.video_viewer_publisher
-
         # -- 定时器 (按键状态清理) --
         self.button_select_state = ButtonState()
         self.button_states = [
@@ -132,6 +132,11 @@ class AutoController(Node):
         状态显示的回调
         """
         pass
+        # self.get_logger().info(
+        #     f"\033[01;36m[状态]:\033[0m"
+        #     f" mode: {self.control_state.runtimestate.mode},"
+        #     f" modules: {self.control_state.runtimestate.modules},"
+        # )
 
     def serial_sender_callback(self):
         """
@@ -184,18 +189,18 @@ class AutoController(Node):
         ```
         """
 
-        # 按键 select 翻转计数  有线手柄 8 无线手柄 7
+        # 按键 select 翻转计数  有线手柄 8 无线手柄 6
         # TODO 优化: 记录上升沿和下降沿为一次高电平触发，而不是翻转计数
-        if joy_msg.buttons[7] != self.button_select_state.last_state:
+        if joy_msg.buttons[6] != self.button_select_state.last_state:
             self.button_select_state.flip_cnt += 1
-        self.button_select_state.last_state = joy_msg.buttons[7]
+        self.button_select_state.last_state = joy_msg.buttons[6]
 
         if self.button_select_state.flip_cnt == 2 * 2:  # 4次翻转，连续按下两次
             self.control_state.next_mode()
             self.button_select_state.flip_cnt = 0
             self.get_logger().info(
                 f"\033[01;36mControl Mode Switching:\033[0m"
-                f" {self.control_state.MODE_MAP[self.control_state.control_mode]}"
+                f" {self.control_state.MODE_MAP[self.control_state.runtimestate.mode]}"
             )
 
         # 有线手柄 摇杆(joystick): 美国手
@@ -212,10 +217,10 @@ class AutoController(Node):
 
         # -----------
 
-        scale = 0.2  # 手动控制时建议设置一个系数，防止速度过快
+        scale = 0.1  # 手动控制时建议设置一个系数，防止速度过快
 
-        if (self.control_state.control_mode & self.control_state.JOY) == self.control_state.JOY:
-            self.control_state.speed.x = js_r_x[0] * js_r_x[1] * scale
+        if (self.control_state.runtimestate.mode & self.control_state.JOY) == self.control_state.JOY:
+            self.control_state.speed.x = js_r_x[0] * js_r_x[1] * scale*2
             self.control_state.speed.y = js_r_y[0] * js_r_y[1] * scale
             self.control_state.speed.z = js_l_x[0] * js_l_x[1] * scale*3
             # self.get_logger().info(
@@ -241,13 +246,13 @@ class AutoController(Node):
         误差调整的时候，减小 x 的速度
         """
 
-        if (self.control_state.control_mode & self.control_state.AUTO) == self.control_state.AUTO:
+        if (self.control_state.runtimestate.mode & self.control_state.AUTO) == self.control_state.AUTO:
             self.control_state.speed.x = 0.1  # 设置最大速度 0.1
             self.control_state.speed.y = -1*y_sign / 1280*50
             self.control_state.speed.z = -0.005*z_sign
-            self.get_logger().info(
-                f"车道线偏移 ({y_offset}, {z_offset:.3f}))"
-                f"  校准速度 ({self.control_state.speed.y :.3f}, {self.control_state.speed.z:.3f})")
+            # self.get_logger().info(
+            #     f"车道线偏移 ({y_offset}, {z_offset:.3f}))"
+            #     f"  校准速度 ({self.control_state.speed.y :.3f}, {self.control_state.speed.z:.3f})")
 
     def reset_button_state_callback(self):
         """重置按键状态"""

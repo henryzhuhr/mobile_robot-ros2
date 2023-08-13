@@ -43,7 +43,7 @@ which python
 ext_python_path=$(python -c 'import site; print(":".join(site.getsitepackages()))')
 export PYTHONPATH=$PYTHONPATH:$ext_python_path
 
-# ros2 launch py_launch cpp_video_streamer-video_reader.launch.py
+
 ros2 launch py_launch car.launch.py
 
 

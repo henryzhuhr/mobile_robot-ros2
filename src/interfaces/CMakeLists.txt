@@ -15,6 +15,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -24,7 +25,10 @@ find_package(sensor_msgs REQUIRED)# 消息依赖
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Lanes.msg" # 车道线消息格式
-  "msg/ImageViewer.msg" # 视频显示消息
+  "msg/ImageViewer.msg" # 
+  # 车辆状态
+  "msg/Speed.msg" # 速度状态
+  "msg/RuntimeState.msg" # 运行状态
   DEPENDENCIES std_msgs sensor_msgs
 )
 
