@@ -27,6 +27,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Lanes.msg" # 车道线消息格式
   "msg/ImageViewer.msg" # 
   # 车辆状态
+  "msg/Location.msg" # 定位信息
   "msg/Speed.msg" # 速度状态
   "msg/RuntimeState.msg" # 运行状态
   DEPENDENCIES std_msgs sensor_msgs

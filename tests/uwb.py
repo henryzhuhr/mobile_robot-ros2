@@ -3,7 +3,7 @@ import struct
 
 
 # set up serial
-def uwb_ser_init(port="COM12", baud_rate=115200):
+def uwb_ser_init(port="/dev/ttyUSB1", baud_rate=115200):
     ser = serial.Serial(port, baud_rate, timeout=1)
     return ser
 
@@ -103,4 +103,4 @@ def uwb_get_loc(ser, ave_cap=10, filter_size=2):
 SER = uwb_ser_init()
 while True:
     XYZ_AVE = uwb_get_loc(SER)
-    print("(X, Y, Z) = ", XYZ_AVE)
+    print(f" x: {XYZ_AVE[0]:.2f} y: {XYZ_AVE[1]:.2f} z: {XYZ_AVE[2]:.2f}")
