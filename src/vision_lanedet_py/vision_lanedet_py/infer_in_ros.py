@@ -77,8 +77,8 @@ class LaneDetector(Node):
         img = self.cv_bridge.compressed_imgmsg_to_cv2(msg)
         
         # img = cv2.resize(img, (640, 480))
-        img = cv2.undistort(img, camera_matrix, distortion_coefficients)
-        img = img[250:, :1200]  # 裁切下半部分
+        # img = cv2.undistort(img, camera_matrix, distortion_coefficients)
+        # img = img[250:, :1200]  # 裁切下半部分
 
         infer_result: InferResult = self.model_infer.infer(img)
 

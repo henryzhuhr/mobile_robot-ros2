@@ -11,7 +11,7 @@ from .serial_control.serial_control import SerialControl
 from .decision_planning.vision_lanes import LanesDetectionDecision
 from .utils.image_buffer import ImageViewerBuffer
 
-from .types import SpeedState, ButtonState
+from .types import SpeedState, ButtonState, JOY_KB_MAP
 
 
 class ControlState:
@@ -49,13 +49,24 @@ class AutoController(Node):
         super().__init__("auto_controller")
         self.get_logger().info(
             "\033[01;32mCar Auto Controller Node Started\033[0m")
+        # 手柄键位映射文件
+        self.declare_parameter(
+            "joy_config", "configs/joys/Microsoft-X-Box-360-pad.json")
+        joy_config = self.get_parameter(
+            "joy_config").get_parameter_value().string_value
+        self.joy_kb_map = JOY_KB_MAP(joy_config)
+        self.get_logger().info(
+            f"\033[01;36mJoy Config:\033[0m {joy_config}"
+            "\n"
+            f"{self.joy_kb_map}"
+        )
 
         # 初始化消息通信
         self.init_sub_pub()
 
         # -- 打开串口 --
         self.ser_ctr = SerialControl(
-            serial_type="ACM",
+            serial_type="USB",
             baudrate=115200,
             frame_len=18-4,
         )
@@ -148,52 +159,13 @@ class AutoController(Node):
         self.ser_ctr.send_car()
 
     def joy_callback(self, joy_msg: Joy):
-        """
-        手柄手动控制的回调
-
-        ROS 内置手柄控制文档 http://wiki.ros.org/joy
-
-        Joy 消息结构
-        ```python
-        sensor_msgs.msg.Joy(
-            header=std_msgs.msg.Header(
-                stamp=builtin_interfaces.msg.Time(
-                    sec=1690353442,
-                    nanosec=770217921
-                ),
-                frame_id='joy'
-            ),
-            axes=[
-                -0.0,   # 左摇杆 x 轴   : 左+ 右-
-                -0.0,   # 左摇杆 y 轴   : 上+ 下-
-                -0.0,   # 右摇杆 y 轴   : 上+ 下-
-                -0.0,   # 右摇杆 x 轴   : 左+ 右-
-                0.0,    # 左侧方向键 x 轴: 左+ 右-
-                0.0     # 左侧方向键 y 轴: 上+ 下-
-                ],
-            buttons=[
-                0,      #  0 右侧按键 1
-                0,      #  1 右侧按键 2
-                0,      #  2 右侧按键 3
-                0,      #  3 右侧按键 4
-                0,      #  4 左上侧按键 1
-                0,      #  5 右上侧按键 1
-                0,      #  6 左上侧按键 2
-                0,      #  7 右上侧按键 2
-                0,      #  8 select
-                0,      #  9 start
-                0,      # 10 左摇杆按键
-                0       # 11 右摇杆按键
-                ]
-        )
-        ```
-        """
+        """ 手柄手动控制的回调 """
 
         # 按键 select 翻转计数  有线手柄 8 无线手柄 6
         # TODO 优化: 记录上升沿和下降沿为一次高电平触发，而不是翻转计数
-        if joy_msg.buttons[6] != self.button_select_state.last_state:
+        if joy_msg.buttons[self.joy_kb_map.button_select] != self.button_select_state.last_state:
             self.button_select_state.flip_cnt += 1
-        self.button_select_state.last_state = joy_msg.buttons[6]
+        self.button_select_state.last_state = joy_msg.buttons[self.joy_kb_map.button_select]
 
         if self.button_select_state.flip_cnt == 2 * 2:  # 4次翻转，连续按下两次
             self.control_state.next_mode()
@@ -204,29 +176,34 @@ class AutoController(Node):
             )
 
         # 有线手柄 摇杆(joystick): 美国手
-        # js_l_x = self.sign(joy_msg.axes[0] * 3.14)  # 左摇杆 x 轴 航向 course
+        # js_l_x = self.sign(joy_msg.axes[0])  # 左摇杆 x 轴 航向 course
         # js_l_y = self.sign(joy_msg.axes[1])        # 左摇杆 y 轴 升降 lift  (禁用)
-        # js_r_x = self.sign(joy_msg.axes[2] * 1.3)  # 右摇杆 x 轴 前后 forwardback
-        # js_r_y = self.sign(joy_msg.axes[3] * 1.3)  # 右摇杆 y 轴 左右 leftright
+        # js_r_x = self.sign(joy_msg.axes[2])  # 右摇杆 x 轴 前后 forwardback
+        # js_r_y = self.sign(joy_msg.axes[3])  # 右摇杆 y 轴 左右 leftright
 
         # 无线手柄 摇杆(joystick): 美国手
-        js_l_x = self.sign(joy_msg.axes[0] * 3.14)  # 左摇杆 x 轴 航向 course
-        js_l_y = self.sign(joy_msg.axes[1])        # 左摇杆 y 轴 升降 lift  (禁用)
-        js_r_x = self.sign(joy_msg.axes[4] * 1.3)  # 右摇杆 x 轴 前后 forwardback
-        js_r_y = self.sign(joy_msg.axes[3] * 1.3)  # 右摇杆 y 轴 左右 leftright
+        # 左摇杆 x 轴 航向 course
+        js_l_x = self.sign(joy_msg.axes[self.joy_kb_map.axis_stick_left__LR])
+        # 左摇杆 y 轴 升降 lift  (禁用)
+        js_l_y = self.sign(joy_msg.axes[self.joy_kb_map.axis_stick_left__UD])
+        # 右摇杆 x 轴 前后 forwardback
+        js_r_x = self.sign(joy_msg.axes[self.joy_kb_map.axis_stick_right_UD])
+        # 右摇杆 y 轴 左右 leftright
+        js_r_y = self.sign(joy_msg.axes[self.joy_kb_map.axis_stick_right_LR])
 
         # -----------
 
-        scale = 0.1  # 手动控制时建议设置一个系数，防止速度过快
+        scale = 0.2  # 手动控制时建议设置一个系数，防止速度过快
 
         if (self.control_state.runtimestate.mode & self.control_state.JOY) == self.control_state.JOY:
-            self.control_state.speed.x = js_r_x[0] * js_r_x[1] * scale*2
-            self.control_state.speed.y = js_r_y[0] * js_r_y[1] * scale
-            self.control_state.speed.z = js_l_x[0] * js_l_x[1] * scale*3
+            self.control_state.speed.x = js_r_x[0] * js_r_x[1] * 1.3 * scale
+            self.control_state.speed.y = js_r_y[0] * js_r_y[1] * 1.3 * scale
+            self.control_state.speed.z = js_l_x[0] * js_l_x[1] * 3.14 * scale
             # self.get_logger().info(
             #     f"AXES:{list(joy_msg.axes)} "
             #     f"BUTTON:{list(joy_msg.buttons)} "
-            #     f"SEND:[{self.control_state.speed.x}, {self.control_state.speed.y}, { self.control_state.speed.z}]"
+            #     # f"XYZ:({js_r_x}, {js_r_y}, {js_l_x})"
+            #     # f"SEND:[{self.control_state.speed.x}, {self.control_state.speed.y}, { self.control_state.speed.z}]"
             # )
 
     def lanedet_callback(self, msg: Lanes):

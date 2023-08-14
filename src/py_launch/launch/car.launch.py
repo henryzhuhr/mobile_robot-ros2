@@ -7,7 +7,19 @@ platform_architecture = platform.architecture()[0]
 
 
 def generate_launch_description():
-
+    joy_node = Node(                        # 「节点」 手柄控制
+        package="joy",
+        executable="joy_node",
+        name="joy",
+    )
+    car_control_node = Node(                 # 「节点」 车辆控制
+        package="controller_py",
+        executable="control",
+        name="control",
+        parameters=[{
+            "joy_config": "configs/joys/Microsoft-X-Box-360-pad.json",
+        }],
+    )
     cpp_video_reader = Node(
         package="video_streamer_cpp",
         executable="video_reader",
@@ -20,16 +32,6 @@ def generate_launch_description():
         package="video_streamer_cpp",
         executable="video_viewer",
         name="videoV",
-    )
-    car_control_node = Node(                 # 「节点」 车辆控制
-        package="controller_py",
-        executable="control",
-        name="control",
-    )
-    joy_node = Node(                        # 「节点」 手柄控制
-        package="joy",
-        executable="joy_node",
-        name="joy",
     )
 
     """
