@@ -20,3 +20,5 @@ log/
 
 # Python
 *.py[cod]
+
+.env

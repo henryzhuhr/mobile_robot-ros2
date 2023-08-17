@@ -13,24 +13,26 @@ cd $WORKDIR/src
 
 # -- 构建运行 --
 cd $WORKDIR
-# rm -rf build install log
+rm -rf build install log
 
 source ~/.bashrc
-source /opt/ros/foxy/setup.bash
+source .env/ros2/bin/activate
+source /opt/ros/humble/setup.bash
 
-eval "$(conda shell.bash hook)"
-conda activate ros2
+# eval "$(conda shell.bash hook)"
+# conda activate ros2
+
 
 # pip install empy numpy==1.20
 
 
 BUILD_LIST=(
-    # interfaces # 统一接口
-    # video_streamer_cpp # 视频流
+    interfaces # 统一接口
+    video_streamer_cpp # 视频流
     sensor_uwb_py     # uwb 数据采集功能
     # vision_lanedet_py     # 视觉 车道线检测
-    # controller_py
-    # py_launch
+    controller_py
+    py_launch
 )
 for item in ${BUILD_LIST[@]}; do
     echo ""
@@ -48,5 +50,5 @@ export PYTHONPATH=$PYTHONPATH:$ext_python_path
 # ros2 launch py_launch car.launch.py
 
 
-ros2 run sensor_uwb_py sensor_uwb
+# ros2 run sensor_uwb_py sensor_uwb
 
