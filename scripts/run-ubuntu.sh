@@ -28,11 +28,11 @@ source /opt/ros/humble/setup.bash
 
 BUILD_LIST=(
     interfaces # 统一接口
-    video_streamer_cpp # 视频流
-    sensor_uwb_py     # uwb 数据采集功能
+    # video_streamer_cpp # 视频流
+    # sensor_uwb_py     # uwb 数据采集功能
     # vision_lanedet_py     # 视觉 车道线检测
-    controller_py
-    py_launch
+    # controller_py
+    # py_launch
 )
 for item in ${BUILD_LIST[@]}; do
     echo ""
