@@ -5,11 +5,7 @@ echo "work dir ${WORKDIR}"
 cd $WORKDIR
 
 
-# -- 创建包 --
-cd $WORKDIR/src
-# ros2 pkg create --build-type ament_python sensor_uwb_py \
-#     --dependencies rclpy std_msgs
-# exit
+
 
 # -- 构建运行 --
 cd $WORKDIR
@@ -27,7 +23,9 @@ source /opt/ros/humble/setup.bash
 
 
 BUILD_LIST=(
-    interfaces # 统一接口
+    state_interfaces # 系统状态接口
+    system_manager # 系统管理
+    
     # video_streamer_cpp # 视频流
     # sensor_uwb_py     # uwb 数据采集功能
     # vision_lanedet_py     # 视觉 车道线检测
@@ -48,6 +46,12 @@ export PYTHONPATH=$PYTHONPATH:$ext_python_path
 
 
 # ros2 launch py_launch car.launch.py
+ros2 run system_manager system_manager
+
+exit
+
+source install/setup.bash
+ros2 run system_manager test_system_manager
 
 
 # ros2 run sensor_uwb_py sensor_uwb

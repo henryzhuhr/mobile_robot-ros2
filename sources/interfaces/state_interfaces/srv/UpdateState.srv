@@ -1,0 +1,5 @@
+uint8 group
+uint8 id
+bool state
+---
+uint64 error_code
