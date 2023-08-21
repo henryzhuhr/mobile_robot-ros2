@@ -10,7 +10,9 @@ std_msgs/Header header
 
 uint64 task_state 0
 uint64 task_enable 0
+
 uint64 sensor_state 0
 uint64 sensor_enable 0
+
 uint64 vision_state 0
 uint64 vision_enable 0

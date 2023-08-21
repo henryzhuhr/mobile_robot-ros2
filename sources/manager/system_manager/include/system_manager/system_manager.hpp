@@ -18,12 +18,14 @@ using TIME_MS = std::chrono::milliseconds;       // 毫秒时间
 class SystemManager : public rclcpp::Node
 {
 private:
+  const std::string system_config = "configs/state.json";     // 系统状态配置文件
   const TIME_MS ss_publish_timer_interval = TIME_MS(1000);    // 系统状态发布定时器回调间隔 单位：毫秒
   const std::string ss_publisher_topic_name = "system_state"; // 系统状态发布的话题名称
   const rclcpp::QoS ss_publisher_qos = rclcpp::QoS(10);       // 系统状态发布 QoS
 
   const std::string update_state_server_name = "__server__update_system_state"; // 系统状态更新的服务名称
-
+  
+  void parse_config();
 public:
   explicit SystemManager(std::string name = "system_manager");
 

@@ -25,7 +25,7 @@ namespace SystemState
     enum class Task : uint64_t
     {
         STOP = 0,
-        JOY_CONTROL, // 手柄控制任务
+        JOY_CONTROL = 1, // 手柄控制任务
     };
     /**
      * 系统预设传感器列表
@@ -33,8 +33,8 @@ namespace SystemState
     enum class Sensor : uint64_t
     {
         NONE = 0,
-        USB_RGB_CAMERA, // USB RGB相机
-        SCI_RGB_CAMERA, // SCI RGB相机
+        USB_RGB_CAMERA = 1, // USB RGB相机
+        SCI_RGB_CAMERA,     // SCI RGB相机
     };
     /**
      * 系统预设视觉算法列表
@@ -42,8 +42,9 @@ namespace SystemState
     enum class Vison : uint64_t
     {
         NONE = 0,
-        LANE_DETECTION,   // 车道线检测
-        OBJECT_DETECTION, // 目标检测
+        OBJECT_DETECTION = 1, // 目标检测
+        LANE_DETECTION = 4,   // 车道线检测
+
     };
 
     namespace Color
@@ -61,7 +62,7 @@ namespace SystemState
     }
     /**
      * @brief 错误码 (uint64_t)
-    */
+     */
     enum class ErrorCode : uint64_t
     {
         NO_ERROR = 0,                 // 没有错误

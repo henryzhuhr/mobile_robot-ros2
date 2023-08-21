@@ -21,6 +21,8 @@ source /opt/ros/humble/setup.bash
 
 # pip install empy numpy==1.20
 
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKDIR/libs/jsoncpp/lib/cmake/jsoncpp"
+
 
 BUILD_LIST=(
     state_interfaces # 系统状态接口
@@ -48,10 +50,7 @@ export PYTHONPATH=$PYTHONPATH:$ext_python_path
 # ros2 launch py_launch car.launch.py
 ros2 run system_manager system_manager
 
-exit
 
-source install/setup.bash
-ros2 run system_manager test_system_manager
 
 
 # ros2 run sensor_uwb_py sensor_uwb

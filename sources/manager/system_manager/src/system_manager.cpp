@@ -1,4 +1,5 @@
-#include <rclcpp/rclcpp.hpp>
+#include <fstream>
+#include <json/json.h>
 
 #include "system_manager/system_manager.hpp"
 #include "system_manager/system_state.hpp"
@@ -9,6 +10,7 @@
 
 SystemManager::SystemManager(std::string name) : Node(name)
 {
+    this->parse_config();
     this->ss_publish_timer_ = this->create_wall_timer(
         this->ss_publish_timer_interval,                           // period
         std::bind(&SystemManager::ss_publish_timer_callback, this) // callback
@@ -34,6 +36,109 @@ SystemManager::SystemManager(std::string name) : Node(name)
 void SystemManager::update_time_stamp()
 {
     this->system_state.header.stamp = this->now();
+}
+
+void SystemManager::parse_config()
+{
+    std::ifstream ifile;
+    ifile.open(this->system_config);
+    if (ifile.is_open())
+    {
+        Json::CharReaderBuilder ReaderBuilder;
+        ReaderBuilder["emitUTF8"] = true; // enable UTF8 decoding
+
+        Json::Value root; // starts as "null"; will contain the root value after parsing
+
+        std::string strerr;
+        bool ok = Json::parseFromStream(ReaderBuilder, ifile, &root, &strerr);
+        if (ok)
+        {
+            RCLCPP_INFO(this->get_logger(), "config file parse success");
+            if (root.isMember("state"))
+            {
+                Json::Value root_state = root["state"];
+
+                if (root_state.isMember("task"))
+                {
+                    for (const auto &item : root_state["task"])
+                    {
+                        if (item.isMember("id") && item.isMember("enable"))
+                        {
+                            if (item["id"].asInt() > SystemState::ID_NUM_MAX)
+                            {
+                                RCLCPP_WARN(this->get_logger(), "[CONFIG] state [task] id overflow");
+                            }
+                            else
+                            {
+                                if (item["enable"].asBool())
+                                {
+                                    set_bit(this->system_state.task_enable, item["id"].asInt());
+                                    RCLCPP_INFO(this->get_logger(), "[INIT] enable   task[%02d] %s", item["id"].asInt(), item["name"].asCString());
+                                }
+                            }
+                        }
+                    }
+                }
+                if (root_state.isMember("sensor"))
+                {
+
+                    for (const auto &item : root_state["sensor"])
+                    {
+                        if (item.isMember("id") && item.isMember("enable"))
+                        {
+                            if (item["id"].asInt() > SystemState::ID_NUM_MAX)
+                            {
+                                RCLCPP_WARN(this->get_logger(), "[CONFIG] state [task] id overflow");
+                            }
+                            else
+                            {
+                                if (item["enable"].asBool())
+                                {
+                                    set_bit(this->system_state.sensor_enable, item["id"].asInt());
+                                    RCLCPP_INFO(this->get_logger(), "[INIT] enable sensor[%02d] %s", item["id"].asInt(), item["name"].asCString());
+                                }
+                            }
+                        }
+                    }
+                }
+                if (root_state.isMember("vision"))
+                {
+
+                    for (const auto &item : root_state["vision"])
+                    {
+                        if (item.isMember("id") && item.isMember("enable"))
+                        {
+                            if (item["id"].asInt() > SystemState::ID_NUM_MAX)
+                            {
+                                RCLCPP_WARN(this->get_logger(), "[CONFIG] state [task] id overflow");
+                            }
+                            else
+                            {
+                                if (item["enable"].asBool())
+                                {
+                                    set_bit(this->system_state.vision_enable, item["id"].asInt());
+                                    RCLCPP_INFO(this->get_logger(), "[INIT] enable vision[%02d] %s", item["id"].asInt(), item["name"].asCString());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                RCLCPP_WARN(this->get_logger(), "config file warning: no key \"state\"");
+            }
+        }
+        else
+        {
+            RCLCPP_ERROR(this->get_logger(), "json parse error");
+        }
+        ifile.close();
+    }
+    else
+    {
+        RCLCPP_ERROR(this->get_logger(), "config file\"%s\" open error", this->system_config.c_str());
+    }
 }
 
 uint64_t SystemManager::update_state(uint8_t group, uint8_t id, bool state)
@@ -68,7 +173,7 @@ void SystemManager::ss_publish_timer_callback()
 {
     this->update_time_stamp();
     this->ss_publisher_->publish(this->system_state);
-#define Debug
+// #define Debug
 #ifdef Debug
     RCLCPP_INFO(this->get_logger(),
                 "%s[STATE]%s %sheader.stamp%s: %10d,%-10d %stask%s:%lx(%lx) %ssensor%s:%lx(%lx) %s",
