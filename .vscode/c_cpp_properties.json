@@ -9,10 +9,11 @@
                 "/opt/ros/humble/include/**",
                 "/usr/include/opencv4",
                 "libs/jsoncpp/include",
+                "libs/paho-mqtt-cpp/include",
                 "install/state_interfaces/include/state_interfaces",
                 "sources/manager/system_manager/include",
-                "sources/video_streamer_cpp/include",
-                "install/interfaces/inclcdude"
+                "sources/data_transmission/include",
+                "sources/video_streamer_cpp/include"
             ],
             "name": "ROS",
             "intelliSenseMode": "linux-gcc-arm64",

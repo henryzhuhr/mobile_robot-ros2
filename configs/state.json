@@ -1,5 +1,8 @@
 {
     "encoding": "UTF-8",
+    "device": {
+        "id": "001"
+    },
     "state": {
         "task": [
             {
