@@ -3,7 +3,12 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <string>
+#include "state_interfaces/msg/system_state.hpp"
 #include "state_interfaces/srv/update_state.hpp"
+
+using I_SS = state_interfaces::msg::SystemState; // 状态接口 系统状态 类型
+using S_US = state_interfaces::srv::UpdateState; // 更新状态 服务接口
+using TIME_MS = std::chrono::milliseconds;       // 毫秒时间
 
 namespace SystemState
 {
@@ -62,7 +67,7 @@ namespace SystemState
         static constexpr char LBLUE[] = "\033[01;34m";
 
     }
-    
+
 }
 
 #endif // SYSTEM_MANAGER__SYSTEM_MANAGER__STATE_HPP

@@ -25,6 +25,7 @@ find_package(std_msgs REQUIRED)# 消息依赖
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   # 车辆状态
+  "msg/Speed.msg" # 系统状态
   "msg/SystemState.msg" # 系统状态
   # 服务
   "srv/UpdateState.srv" # 更新状态

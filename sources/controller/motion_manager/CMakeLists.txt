@@ -31,6 +31,7 @@ include_directories(${JSON_INC_PATH})
 # [Node] motion_manager : 编译 链接 添加ros依赖 安装
 set(NODE_NAME motion_manager)
 add_executable(${NODE_NAME} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/motion_manager.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/app/motion_manager.cpp
 )
 target_link_libraries(${NODE_NAME} 

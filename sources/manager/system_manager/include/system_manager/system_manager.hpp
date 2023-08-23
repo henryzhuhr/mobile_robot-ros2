@@ -10,9 +10,7 @@
 #include "system_state/state.hpp"
 #include "system_state/error.hpp"
 
-using I_SS = state_interfaces::msg::SystemState; // 状态接口 系统状态 类型
-using S_US = state_interfaces::srv::UpdateState; // 更新状态 服务接口
-using TIME_MS = std::chrono::milliseconds;       // 毫秒时间
+
 /**
  * @brief 系统状态管理器
  */

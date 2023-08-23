@@ -21,7 +21,7 @@ source /opt/ros/humble/setup.bash
 
 BUILD_LIST=(
     # state_interfaces # 系统状态接口
-    system_manager # 系统管理
+    # system_manager # 系统管理
 
     motion_manager # 运动控制管理(包括底层数据收集)
 
