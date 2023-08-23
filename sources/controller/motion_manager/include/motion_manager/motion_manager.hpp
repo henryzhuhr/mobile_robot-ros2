@@ -1,0 +1,7 @@
+#ifndef MOTION_MANAGER__MOTION_MANAGER_HPP
+#define MOTION_MANAGER__MOTION_MANAGER_HPP
+
+
+#include "system_state/state.hpp"
+
+#endif // MOTION_MANAGER__MOTION_MANAGER_HPP

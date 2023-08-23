@@ -13,15 +13,17 @@
 
 系统状态消息 [`SystemState`](sources/interfaces/state_interfaces/msg/SystemState.msg) ，定义了系统的状态信息，消息格式如下：
 
-| 字段 | 类型 | 描述 |
-| --- | --- | --- |
-| header | std_msgs/Header | 消息头 |
-| task | uint64 | 位标识，系统当前执行的任务 |
-| task_enable | uint64 | 位标识，系统任务列表可用性，0表示禁用 |
-| sensor | uint64 | 位标识，系统当前使用的传感器，至多预留的64个传感器 |
-| sensor_enable | uint64 | 位标识，系统传感器可用性，0表示禁用 |
-| vision | uint64 | 位标识，系统当前执行的视觉算法，至多预留的64个视觉算法 |
-| vision_enable | uint64 | 位标识，系统可用的视觉算法，0表示禁用 |
+| 字段          | 类型            | 描述                                                   |
+| ------------- | --------------- | ------------------------------------------------------ |
+| header        | std_msgs/Header | 消息头                                                 |
+| task_state    | uint64          | 位标识，系统当前执行的任务                             |
+| task_enable   | uint64          | 位标识，系统任务列表可用性，0表示禁用                  |
+| sensor_state  | uint64          | 位标识，系统当前使用的传感器，至多预留的64个传感器     |
+| sensor_enable | uint64          | 位标识，系统传感器可用性，0表示禁用                    |
+| vision_state  | uint64          | 位标识，系统当前执行的视觉算法，至多预留的64个视觉算法 |
+| vision_enable | uint64          | 位标识，系统可用的视觉算法，0表示禁用                  |
 
 
 > ROS2 消息参考 [common_interfaces](https://github.com/ros2/common_interfaces)
+
+编程参考 [`test_system_manager`](sources/manager/system_manager/test/test_system_manager.cpp)

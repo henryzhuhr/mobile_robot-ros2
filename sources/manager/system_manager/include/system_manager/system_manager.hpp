@@ -7,7 +7,8 @@
 #include "state_interfaces/msg/system_state.hpp"
 #include "state_interfaces/srv/update_state.hpp"
 
-#include "system_manager/system_state.hpp"
+#include "system_state/state.hpp"
+#include "system_state/error.hpp"
 
 using I_SS = state_interfaces::msg::SystemState; // 状态接口 系统状态 类型
 using S_US = state_interfaces::srv::UpdateState; // 更新状态 服务接口
@@ -24,8 +25,9 @@ private:
   const rclcpp::QoS ss_publisher_qos = rclcpp::QoS(10);       // 系统状态发布 QoS
 
   const std::string update_state_server_name = "__server__update_system_state"; // 系统状态更新的服务名称
-  
+
   void parse_config();
+
 public:
   explicit SystemManager(std::string name = "system_manager");
 

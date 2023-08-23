@@ -1,5 +1,5 @@
-#ifndef SYSTEM_MANAGER__SYSTEM_MANAGER__SYSTEM_STATE_HPP
-#define SYSTEM_MANAGER__SYSTEM_MANAGER__SYSTEM_STATE_HPP
+#ifndef SYSTEM_MANAGER__SYSTEM_MANAGER__STATE_HPP
+#define SYSTEM_MANAGER__SYSTEM_MANAGER__STATE_HPP
 
 #include <rclcpp/rclcpp.hpp>
 #include <string>
@@ -7,6 +7,7 @@
 
 namespace SystemState
 {
+
     static const uint8_t GROUP_NUM_MAX = sizeof(uint8_t) << 3;
     static const uint8_t ID_NUM_MAX = sizeof(uint64_t) << 3;
     /**
@@ -21,10 +22,11 @@ namespace SystemState
 
     /**
      * 系统任务列表
+     * 任务状态以独占形式进行管理，即当前如果有任务在执行时，新的任务指令将返回reject状态
      */
     enum class Task : uint64_t
     {
-        STOP = 0,
+        IDLE = 0,        // 空闲状态
         JOY_CONTROL = 1, // 手柄控制任务
     };
     /**
@@ -60,15 +62,7 @@ namespace SystemState
         static constexpr char LBLUE[] = "\033[01;34m";
 
     }
-    /**
-     * @brief 错误码 (uint64_t)
-     */
-    enum class ErrorCode : uint64_t
-    {
-        NO_ERROR = 0,                 // 没有错误
-        STATE_UPDATE_GROUP_NOT_FOUND, // 系统状态更新时，未找到对应的状态分组
-        STATE_UPDATE_ID_OVERFLOW,     // 系统状态更新时，状态ID超出范围
-
-    };
+    
 }
-#endif // SYSTEM_MANAGER__SYSTEM_MANAGER__SYSTEM_STATE_HPP
+
+#endif // SYSTEM_MANAGER__SYSTEM_MANAGER__STATE_HPP

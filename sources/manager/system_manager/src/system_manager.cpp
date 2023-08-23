@@ -1,8 +1,11 @@
 #include <fstream>
 #include <json/json.h>
 
+
+#include "system_state/state.hpp"
+#include "system_state/error.hpp"
 #include "system_manager/system_manager.hpp"
-#include "system_manager/system_state.hpp"
+
 
 #define set_bit(x, y) x |= (1 << y)     // 将 X 的第 Y 位 置1
 #define reset_bit(x, y) x &= ~(1 << y)  // 将 X 的第 Y 位 清0
@@ -156,13 +159,29 @@ uint64_t SystemManager::update_state(uint8_t group, uint8_t id, bool state)
         }
         else
         {
-            if (state)
+
+            if (group == static_cast<uint8_t>(SystemState::StateGroup::TASK))
             {
-                *(iter->second) |= (1 << id);
+                if (state)
+                {
+                    // TASK 任务是独占式的，只能有一个任务处于运行状态
+                    *(iter->second) &= (1 << id);
+                }
+                else
+                {
+                    *(iter->second) &= ~(1 << id);
+                }
             }
             else
             {
-                *(iter->second) &= ~(1 << id);
+                if (state)
+                {
+                    *(iter->second) |= (1 << id);
+                }
+                else
+                {
+                    *(iter->second) &= ~(1 << id);
+                }
             }
             return static_cast<uint64_t>(SystemState::ErrorCode::NO_ERROR);
         }
