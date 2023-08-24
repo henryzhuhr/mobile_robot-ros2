@@ -2,12 +2,12 @@
     "python.autoComplete.extraPaths": [
         "install/car_controller_py/lib/python3.8/site-packages",
         "install/interfaces/lib/python3.8/site-packages",
-        "/opt/ros/foxy/lib/python3.8/site-packages"
+        "/opt/ros/humble/lib/python3.8/site-packages"
     ],
     "python.analysis.extraPaths": [
         "install/car_controller_py/lib/python3.8/site-packages",
         "install/interfaces/lib/python3.8/site-packages",
-        "/opt/ros/foxy/lib/python3.8/site-packages"
+        "/opt/ros/humble/lib/python3.8/site-packages"
     ],
     "files.associations": {
         "cctype": "cpp",
@@ -34,10 +34,12 @@
         "condition_variable": "cpp",
         "cstdint": "cpp",
         "deque": "cpp",
+        "forward_list": "cpp",
         "list": "cpp",
         "map": "cpp",
         "set": "cpp",
         "unordered_map": "cpp",
+        "unordered_set": "cpp",
         "vector": "cpp",
         "exception": "cpp",
         "algorithm": "cpp",
@@ -77,24 +79,11 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "__nullptr": "cpp",
-        "*.ipp": "cpp",
-        "cassert": "cpp",
-        "ccomplex": "cpp",
-        "cerrno": "cpp",
-        "cfloat": "cpp",
-        "ciso646": "cpp",
-        "climits": "cpp",
-        "filesystem": "cpp",
-        "ios": "cpp",
-        "locale": "cpp",
-        "queue": "cpp",
-        "stack": "cpp",
-        "cstdbool": "cpp",
-        "version": "cpp",
-        "core": "cpp",
+        "__node_handle": "cpp",
+        "__bit_reference": "cpp",
         "__config": "cpp",
-        "__undef_macros": "cpp",
-        "__split_buffer": "cpp"
+        "__locale": "cpp",
+        "__string": "cpp",
+        "locale": "cpp"
     },
-    
 }

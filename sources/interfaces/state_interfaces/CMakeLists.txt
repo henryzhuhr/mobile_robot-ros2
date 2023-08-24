@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(interfaces)
+project(state_interfaces)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -20,18 +20,18 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)# 消息依赖
-find_package(sensor_msgs REQUIRED)# 消息依赖
+# find_package(sensor_msgs REQUIRED)# 消息依赖
 
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Lanes.msg" # 车道线消息格式
-  "msg/ImageViewer.msg" # 
   # 车辆状态
-  "msg/Location.msg" # 定位信息
-  "msg/Speed.msg" # 速度状态
-  "msg/RuntimeState.msg" # 运行状态
-  DEPENDENCIES std_msgs sensor_msgs
+  "msg/Speed.msg" # 系统状态
+  "msg/SystemState.msg" # 系统状态
+  # 服务
+  "srv/UpdateState.srv" # 更新状态
+  DEPENDENCIES std_msgs
 )
+
 
 ament_export_dependencies(rosidl_default_runtime)
 

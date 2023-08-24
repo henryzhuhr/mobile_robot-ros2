@@ -3,5 +3,7 @@ empy
 catkin_pkg
 lark
 numpy # ==1.20.2
+setuptools==58.2.0
 # opencv-python
 # pycuda
+

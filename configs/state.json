@@ -1,0 +1,29 @@
+{
+    "encoding": "UTF-8",
+    "device": {
+        "id": "001"
+    },
+    "state": {
+        "task": [
+            {
+                "id": 1,
+                "name": "joy",
+                "enable": true
+            }
+        ],
+        "sensor": [
+            {
+                "id": 1,
+                "name": "usb_rgb_camera",
+                "enable": true
+            }
+        ],
+        "vision": [
+            {
+                "id": 4,
+                "name": "lane_detection",
+                "enable": true
+            }
+        ]
+    }
+}
