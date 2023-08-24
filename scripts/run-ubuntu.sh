@@ -7,15 +7,14 @@ cd $WORKSPACE
 # rm -rf build install log
 
 export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKSPACE/libs/jsoncpp/"
-export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKSPACE/libs/paho-mqtt/lib/cmake/eclipse-paho-mqtt-c"
-export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKSPACE/libs/paho-mqtt/lib/cmake/PahoMqttCpp"
+# export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKSPACE/libs/paho-mqtt/lib/cmake/eclipse-paho-mqtt-c"
+# export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKSPACE/libs/paho-mqtt/lib/cmake/PahoMqttCpp"
 # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKSPACE/libs/serial/share/serial/cmake"
 
 
+# source /opt/ros/<dist>/setup.bash  in   ~/.bashrc
 source ~/.bashrc
 source .env/ros2/bin/activate
-source /opt/ros/humble/setup.bash
-# source libs/serial/share/serial/local_setup.bash
 
 
 
@@ -44,15 +43,16 @@ for item in ${BUILD_LIST[@]}; do
     source install/setup.bash
 done
 
-which python
+# which python
 ext_python_path=$(python -c 'import site; print(":".join(site.getsitepackages()))')
 export PYTHONPATH=$PYTHONPATH:$ext_python_path
 
+source install/setup.bash
 
 # ros2 launch py_launch car.launch.py
 # ros2 run system_manager system_manager
 # ros2 run dt_mqtt_py dt_mqtt
-ros2 run motion_manager motion_manager
+ros2 run motion_manager motion_manager_node
 
 
 

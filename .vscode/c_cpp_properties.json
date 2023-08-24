@@ -1,24 +1,24 @@
 {
     "configurations": [
         {
+            "name": "ROS",
             "browse": {
                 "databaseFilename": "${default}",
                 "limitSymbolsToIncludedHeaders": false
             },
             "includePath": [
-                "/opt/ros/humble/include/**",
+                // "/opt/ros/humble/include/**",
+                "/opt/ros/galactic/include/",
                 "/usr/include/opencv4",
                 "libs/jsoncpp/include",
-                "libs/paho-mqtt-cpp/include",
+                // "install/state_interfaces/include/state_interfaces",
+                "install/state_interfaces/include",
                 "sources/common/system_state/include",
                 "sources/controller/motion_manager/serial/include",
-                "install/state_interfaces/include/state_interfaces",
                 "sources/manager/system_manager/include",
                 "sources/controller/motion_manager/include",
-                "sources/data_transmission/include",
                 "sources/video_streamer_cpp/include"
             ],
-            "name": "ROS",
             "intelliSenseMode": "linux-gcc-arm64",
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu11",

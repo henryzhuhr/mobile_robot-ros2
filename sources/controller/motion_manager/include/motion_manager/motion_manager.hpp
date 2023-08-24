@@ -12,39 +12,113 @@
 
 #include "serial/serial.h"
 
+#include "motion_manager/motion_serial.hpp"
+
 namespace controller
 {
+    namespace frame
+    {
+        namespace v1
+        {
+
+        }
+        inline namespace CAR
+        {
+            const static uint8_t HEADER_1 = 0xAA;
+            const static uint8_t HEADER_2 = 0x55;
+            const static uint8_t SPEED_CONTROL_FLAG = 0x11;
+            const static uint8_t TAIL = 0xFF;
+
+            /**
+             * @brief 串口读取校验状态机
+             */
+            enum class StateMachine : uint8_t
+            {
+                ZERO = 0,
+                HEADER_1,
+                HEADER_2,
+                DATA
+            };
+
+            /**
+             * @brief 帧数据标志
+             */
+            enum class DataFlag : uint8_t
+            {
+                // 控制指令
+                SET_SPEED,
+                // 数据
+                IMU,
+                ODOMETER,
+                END,
+            };
+
+            // 数据标志查找表 (Data Flag LookUp Table)
+            const struct _data_flag
+            {
+                DataFlag id;
+                uint8_t flag;
+                uint8_t length;
+
+            } DF_LUT[] = {
+                {DataFlag::SET_SPEED, 0x11, 18},
+                {DataFlag::IMU, 0x81, 20},
+                {DataFlag::ODOMETER, 0x82, 20},
+            };
+            union u_float_byte
+            {
+                float f;
+                uint8_t b[sizeof(float)];
+            };
+
+            enum class speed_frame_index : uint8_t
+            {
+                FLAG = 2,
+                NONE,
+                X,
+                Y,
+                z,
+            };
+
+        } // namespace frame
+
+    } // namespace serial
 
     typedef struct
     {
-        std::string port = "/dev/ttyUSB0"; //
-        uint32_t baudrate = 115200;
-        uint32_t timeout_ms = 1000;
-    } serial_info;
-
+        int8_t x = 0;
+        int8_t y = 0;
+        float z = 0;
+    } speed_t;
     /**
      * 运动控制管理模块
      */
-    class MotionManager : public rclcpp::Node
+    class MotionManager : public MotionSerial
     {
     private:
-        serial_info serial_info_;   // 串口配置信息
-        serial::Serial serial_;     // motion serial ptr
-        bool serial_enable = false; // 串口是否可用
+        std::thread read_serial_thread;
+        void LoopReadSerial();
+        uint8_t DATA_FLAG_LENGTH[sizeof(uint8_t) << 8] = {UINT8_MAX};
+        const uint8_t SPEED_BUFFER_LEN = frame::DF_LUT[static_cast<uint8_t>(frame::DataFlag::SET_SPEED)].length; // 速度控制帧长度
+        uint8_t *speed_buffer;
 
-        uint8_t serial_read_buffer[100];                          // 串口读取缓冲区
-        const TIME_MS serial_reader_timer_interval = TIME_MS(10); // 串口读取定时器回调间隔 单位：毫秒
-        rclcpp::TimerBase::SharedPtr serial_reader_timer_;        // 串口读取定时器
-        void serial_reader_timer_callback();
+        const TIME_MS serial_send_timer_interval = TIME_MS(50);
+        rclcpp::TimerBase::SharedPtr serial_send_timer_; // 串口发布定时器
+        void serial_send_timer_callback();
 
-        
+        speed_t speed;
 
+ 
 
     public:
         explicit MotionManager();
         ~MotionManager();
-        uint64_t TryOpenSerial();
-        bool SetSpeed(state_interfaces::msg::Speed speed);
+        /**
+         * @brief 开启循环读取串口数据 的线程
+         */
+        void StartReadSerial();
+        void SetSpeed(float x, float y, float z);
     };
+
 } // namespace controll
 #endif // MOTION_MANAGER__MOTION_MANAGER_HPP

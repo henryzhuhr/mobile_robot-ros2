@@ -15,10 +15,10 @@ find_package(jsoncpp REQUIRED)
 # find_package(serial REQUIRED)   # 串口
 
 
-if (EXISTS serial)
-  add_subdirectory(serial)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/serial)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/serial)
 else()
-  message(FATAL_ERROR  "run \"git clone https://github.com/HenryZhuHR/serial.git sources/controller/motion_manager/serial\" first")
+  message(FATAL_ERROR  "run \"git clone https://github.com/HenryZhuHR/serial.git \\ sources/controller/motion_manager/serial\" first")
 endif()
 
 
@@ -29,10 +29,12 @@ include_directories(${JSON_INC_PATH})
 
 
 # [Node] motion_manager : 编译 链接 添加ros依赖 安装
-set(NODE_NAME motion_manager)
+set(NODE_NAME motion_manager_node)
 add_executable(${NODE_NAME} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/motion_serial.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/motion_manager__serial.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/motion_manager.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/app/motion_manager.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/app/${NODE_NAME}.cpp
 )
 target_link_libraries(${NODE_NAME} 
   serial

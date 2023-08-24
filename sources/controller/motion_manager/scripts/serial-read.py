@@ -11,6 +11,7 @@ tty.usbserial-1110
 """
 
 DATA_FLAG = (
+    (0x11, "control", 18),
     (0x81, "imu", 21),
     (0x82, "odometer", 21),
 )
@@ -35,7 +36,7 @@ def main():
         bytesize=serial.EIGHTBITS,  # 数据位
         parity=serial.PARITY_NONE,  # 奇偶校验
         stopbits=serial.STOPBITS_ONE,  # 停止位
-        timeout=0.5  # 读超时设置
+        timeout=0.1  # 读超时设置
     )
 
     if ser is None:
@@ -43,7 +44,7 @@ def main():
         return
 
     try:
-        data_receive = [0] * 500
+        buffer = [0] * 500
         cnt_ = 0
         state = 0  # 收到 AA 时，state=1，收到 55 时，state=2
         frame_len = 0
@@ -57,11 +58,11 @@ def main():
                 # print(type(u8_data),hex(u8_data), u8_data)
 
                 if state == 0 and u8_data == 0xAA:
-                    data_receive[cnt_] = u8_data
+                    buffer[cnt_] = u8_data
                     cnt_ += 1
                     state += 1
                 elif state == 1 and u8_data == 0x55:
-                    data_receive[cnt_] = u8_data
+                    buffer[cnt_] = u8_data
                     cnt_ += 1
                     state += 1
                 elif state == 2:
@@ -75,34 +76,33 @@ def main():
                         state = 0
                         cnt_ = 0
                     else:
-                        data_receive[cnt_] = u8_data
+                        buffer[cnt_] = u8_data
                         cnt_ += 1
                         state += 1
                 elif state == 3:
-                    if cnt_ >= len(data_receive):
+                    if cnt_ >= len(buffer):
                         cnt_ = 0
                         state = 0
-                    data_receive[cnt_] = u8_data
+                    buffer[cnt_] = u8_data
                     cnt_ += 1
-                    if u8_data == 0xFF and cnt_ >= frame_len:
-                        checksum_indx = cnt_ - 2
-                        checksum = 0
-                        for i in range(2, checksum_indx):
-                            checksum += data_receive[i]
-                        checksum = checksum & 0xFF
-                        if checksum == data_receive[checksum_indx]:
-                            data = data_receive[2:checksum_indx]
-                            now_time_str = time.strftime(
-                                "%Y-%m-%d %H:%M:%S",
-                                time.localtime(time.time()))
-                            print(f"[{now_time_str}][收到 {data_name}]",
-                                  " ".join(["%02X" % d for d in data]))
+                    if u8_data == 0xFF and cnt_ == frame_len:
+                        # checksum_indx = cnt_ - 2
+                        # checksum = 0
+                        # for i in range(2, checksum_indx):
+                        #     checksum += buffer[i]
+                        # checksum = checksum & 0xFF
+                        # if checksum == buffer[checksum_indx]:
+                        data = buffer[:cnt_]
+                        now_time_str = time.strftime(
+                            "%Y-%m-%d %H:%M:%S",
+                            time.localtime(time.time()))
+                        print(f"[{now_time_str}][收] [{cnt_}/{frame_len}] ({data_name})",
+                                " ".join(["%02X" % d for d in data]))
                         state = 0
                         cnt_ = 0
                 else:
                     state = 0
                     cnt_ = 0
-                    frame_len = 0
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt")

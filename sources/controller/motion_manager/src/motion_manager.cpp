@@ -4,115 +4,99 @@
 #include <vector>
 namespace controller
 {
-    MotionManager::MotionManager(/* args */) : Node("motion_serial")
-    {
 
-        // 初始化定时器
-        this->serial_reader_timer_ = this->create_wall_timer(
-            this->serial_reader_timer_interval, std::bind(&MotionManager::serial_reader_timer_callback, this));
+    MotionManager::MotionManager()
+    {
+        for (uint8_t i = 0; i < static_cast<uint8_t>(frame::DataFlag::END); i++)
+        {
+            this->DATA_FLAG_LENGTH[frame::DF_LUT[i].flag] = frame::DF_LUT[i].length;
+// #define DEBUG
+#ifdef DEBUG
+            RCLCPP_INFO(this->get_logger(), "(%d) DATA_FLAG_LENGTH[%d] = %d",
+                        i,
+                        frame::DATA_FLAG[i].flag,
+                        this->DATA_FLAG_LENGTH[frame::DATA_FLAG[i].flag] //
+            );
+#endif
+        }
+
+        RCLCPP_INFO(this->get_logger(), "motion manager init");
+
+        this->serial_send_timer_ = this->create_wall_timer(
+            this->serial_send_timer_interval,
+            std::bind(&MotionManager::serial_send_timer_callback, this));
+
+        /**
+         * 初始化速度控制帧，并且设置速度为0
+         */
+        {
+            this->speed_buffer = new uint8_t[SPEED_BUFFER_LEN];
+            for (auto i = 0; i < SPEED_BUFFER_LEN; i++)
+            {
+                this->speed_buffer[i] = 0;
+            }
+            this->speed_buffer[0] = frame::HEADER_1;
+            this->speed_buffer[1] = frame::HEADER_2;
+            this->speed_buffer[2] = frame::SPEED_CONTROL_FLAG;
+            this->speed_buffer[SPEED_BUFFER_LEN - 1] = frame::TAIL;
+            this->SetSpeed(0, 0, 0);
+        }
     }
 
     MotionManager::~MotionManager()
     {
+        if (this->serial_.isOpen())
+        {
+            uint8_t send_cnt = 20;
+            while ((send_cnt--) > 0)
+            {
+                this->SetSpeed(0, 0, 0);
+            }
+        }
+        this->serial_.close();
+        delete[] this->speed_buffer;
     }
-
-    uint64_t MotionManager::TryOpenSerial()
+    void MotionManager::StartReadSerial()
     {
-        std::vector<serial::PortInfo> devices_found = serial::list_ports();
-// #define DEBUG
-#ifdef DEBUG
-        RCLCPP_INFO(this->get_logger(), "Found %ld devices", devices_found.size());
-        for (auto &device : devices_found)
+        // this->read_serial_thread = std::thread(std::bind(&MotionManager::LoopReadSerial, this));
+        // this->read_serial_thread.detach();
+        // 判断串口是否打开
+        while (!this->serial_.isOpen())
         {
-            RCLCPP_INFO(this->get_logger(), "      Device: %s", device.port.c_str());
-        }
-#endif
-
-        auto iter = std::find_if(devices_found.begin(), devices_found.end(), [&](serial::PortInfo &device)
-                                 { return device.port == this->serial_info_.port; });
-        if (iter == devices_found.end())
-        {
-            RCLCPP_ERROR(this->get_logger(),
-                         "\033[01;31mNot found serial (error: %ld):\033[0m %s",
-                         static_cast<uint64_t>(SystemState::ErrorCode::SERIAL_PORT_NOT_FOUND),
-                         this->serial_info_.port.c_str());
-            return static_cast<uint64_t>(SystemState::ErrorCode::SERIAL_PORT_NOT_FOUND);
-        }
-        else
-        {
-            RCLCPP_INFO(this->get_logger(), "\033[01;32mFound serial: %s\033[0m",
-                        this->serial_info_.port.c_str());
-            try
+            auto open_state = this->OpenSerial();
+            if (open_state == 0)
             {
-                this->serial_.setPort(this->serial_info_.port);
-                this->serial_.setBaudrate(this->serial_info_.baudrate);
-                serial::Timeout to = serial::Timeout::simpleTimeout(this->serial_info_.timeout_ms);
-                this->serial_.setTimeout(to);
-                this->serial_.open();
-                if (this->serial_.isOpen())
-                {
-                    this->serial_enable = true;
-
-                    RCLCPP_INFO(this->get_logger(), "\033[01;32mSuccessfully open serial:\033[0m %s",
-                                this->serial_info_.port.c_str());
-                    RCLCPP_INFO(this->get_logger(), "\033[01;32mEnable serial:\033[0m %s (%d)",
-                                this->serial_info_.port.c_str(), this->serial_enable);
-                    return static_cast<uint64_t>(SystemState::ErrorCode::NO_ERROR);
-                }
-                else
-                {
-                    RCLCPP_ERROR(this->get_logger(),
-                                 "\033[01;31mOpen serial failed (error: %ld):\033[0m %s",
-                                 static_cast<uint64_t>(SystemState::ErrorCode::SERIAL_OPEN_FAILED),
-                                 this->serial_info_.port.c_str());
-                    return static_cast<uint64_t>(SystemState::ErrorCode::SERIAL_OPEN_FAILED);
-                }
-            }
-            catch (const std::exception &e)
-            {
-                RCLCPP_ERROR(this->get_logger(), "\033[01;31mOpen serial failed(error: %ld):\033[0m %s",
-                             static_cast<uint64_t>(SystemState::ErrorCode::SERIAL_UNKOOWN_ERROR),
-                             this->serial_info_.port.c_str());
-                return static_cast<uint64_t>(SystemState::ErrorCode::SERIAL_UNKOOWN_ERROR);
+                RCLCPP_INFO(this->get_logger(), "serial open success: %s", this->serial_.getPort().c_str());
             }
         }
     }
 
-    void MotionManager::serial_reader_timer_callback()
+    namespace SM_TEST // 测试状态机 state machine test
     {
+        static uint8_t cnt = 0;
+        static uint8_t state = 0;
+        static float speed_list[][3] = {
+            {0.3, 0, 0},
+            {0, 0, 0},
+            {0, 0.2, 0},
+            {0, 0, 0},
+            {0, 0, 1.0},
+            {0, 0, 0},
+        };
+    }
+    void MotionManager::serial_send_timer_callback()
+    {
+        this->SetSpeed(
+            SM_TEST::speed_list[SM_TEST::state][0],
+            SM_TEST::speed_list[SM_TEST::state][1],
+            SM_TEST::speed_list[SM_TEST::state][2]);
 
-        if (this->serial_enable)
+        if (SM_TEST::cnt++ >= 10)
         {
-            size_t n = this->serial_.available();
-            this->serial_.read(this->serial_read_buffer, n);
-            for (size_t i = 0; i < n; i++)
-            {
-                // 16进制的方式打印到屏幕
-                std::cout << std::hex << (this->serial_read_buffer[i] & 0xff) << " ";
-            }
-            std::cout << std::endl;
-
-            uint8_t serial_write_buffer[100]; // 串口读取缓冲区
-            uint8_t _cnt = 18;
-            for (uint8_t i = 0; i < _cnt; i++)
-            {
-                serial_write_buffer[i] = 0x00;
-            }
-            serial_write_buffer[0] = 0xAA;
-            serial_write_buffer[1] = 0x55;
-            serial_write_buffer[4] = 0x0A;
-            serial_write_buffer[16] = 0x0A;
-            serial_write_buffer[17] = 0xFF;
-
-            this->serial_.write(serial_write_buffer, _cnt);
-            // std::string seiral_buffer(serial_write_buffer, _cnt);
-            std::string seiral_buffer_str = "";
-            for (uint8_t i = 0; i < _cnt; i++)
-            {
-                seiral_buffer_str += std::to_string(serial_write_buffer[i]);
-                seiral_buffer_str += " ";
-            }
-            RCLCPP_INFO(this->get_logger(), "serial write: %s",seiral_buffer_str.c_str());
+            SM_TEST::cnt = 0;
+            SM_TEST::state++;
+            SM_TEST::state %= 6;
         }
     }
+
 } // namespace controll
