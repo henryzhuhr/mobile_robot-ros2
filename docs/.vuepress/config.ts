@@ -9,12 +9,12 @@ const markdownOptions: MarkdownOptions = {
 }
 
 export default defineUserConfig({
-    lang: 'zh-CN',
-    title: '移动机器人',
-    description: '开发文档',
-    base: "/mobile_robot-ros2/",
+  lang: 'zh-CN',
+  title: 'ROS2移动机器人',
+  description: '开发文档',
+  base: "/mobile_robot-ros2.docs/", // 从私有仓库部署到公有仓库时需要修改
 
-    markdown: markdownOptions,
+  markdown: markdownOptions,
   theme: defaultTheme({
     // 在这里进行配置
     repo: 'https://github.com/HenryZhuHR/mobile_robot-ros2',
