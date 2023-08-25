@@ -1,28 +1,34 @@
 {
     "encoding": "UTF-8",
+    "description": "see modules/common/system_state/include/system_state/state.hpp for more details",
     "device": {
         "id": "001"
     },
-    "state": {
+    "system_state": {
         "task": [
             {
                 "id": 1,
-                "name": "joy",
+                "name": "joy_control",
                 "enable": true
             }
         ],
         "sensor": [
             {
                 "id": 1,
-                "name": "usb_rgb_camera",
+                "name": "joy",
                 "enable": true
+            },
+            {
+                "id": 2,
+                "name": "usb_rgb_camera",
+                "enable": false
             }
         ],
         "vision": [
             {
                 "id": 4,
                 "name": "lane_detection",
-                "enable": true
+                "enable": false
             }
         ]
     }

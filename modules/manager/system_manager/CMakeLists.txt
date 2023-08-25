@@ -5,8 +5,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_BUILD_TYPE "Debug")
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -O0")
+  add_compile_definitions(DEBUG)
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
+endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -25,6 +30,7 @@ include_directories(${JSON_INC_PATH})
 # [Node] system_manager : 编译 链接 添加ros依赖 安装
 set(NODE_NAME system_manager_node)
 add_executable(${NODE_NAME} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/config_parse.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/system_manager.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/app/system_manager_node.cpp
 )

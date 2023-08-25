@@ -19,6 +19,7 @@
                 "modules/controller/motion_manager/include",
                 "modules/video_streamer_cpp/include"
             ],
+            "defines": ["DEBUG"],
             "intelliSenseMode": "linux-gcc-arm64",
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu11",

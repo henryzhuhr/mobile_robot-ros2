@@ -6,10 +6,10 @@
 - **common**: 通用功能模块。包括全局的系统状态码定义、通用的工具函数等
   - system_state: 系统状态码和错误码的全局定义
   - utils: 通用工具函数 (未开发)
-- **interfaces**: 数据接口定义。包括各个模块之间的数据接口、消息结构定义
-- **controller**: 控制模块。包括底盘控制、机械臂控制等
+- **interfaces**: 数据接口。 包括各个模块之间的数据接口、消息结构定义
+- **controller**: 系统控制模块。包括底盘控制、机械臂控制等
   - [motion_manager](./modules/controller/motion_manager.md): 运动控制模块
-- **manager**: 管理模块。包括系统状态管理、任务管理等
+- **manager**: 系统管理模块。包括系统状态管理、任务管理等
 - **data_transmission**: 数据传输模块。包括串口通信、网络通信等
   - [dt_mqtt](./modules/data_transmission/dt_mqtt.md): MQTT 通信模块
   - [dt_rtmp](./modules/data_transmission/dt_rtmp.md): 视频推流模块，RTMP 协议
@@ -23,7 +23,8 @@
 
 ## 分支管理
 
-项目使用 git 进行版本控制，每个功能模块都应该新建一个分支进行开发，开发完成后合并到 `dev` 分支，`dev` 分支的代码经过测试后 PR 到 `main` 分支。根据系统架构中功能模块的重要程度不同，有两种分支命名规则：
+项目使用 git 进行版本控制，每个功能模块都应该新建一个分支进行开发，开发完成后合并到 `dev` 分支，`dev` 分支的代码经过测试后 PR 到 `main` 分支。
+根据系统架构中功能模块的重要程度不同，有两种分支命名规则：
 
 1. **核心模块命名规则**
 
@@ -36,6 +37,9 @@
   其他子模块的开发和测试是完全可以独立的，因此，其他功能包的分支应该为 `pkg-<group>__<package_name>` 结构，`<group>` 为功能分组，`<package_name>` 为功能包名，中间用双下划线 `__` 分隔。
 
   例如，控制模块 (controller) 中运动控制 (motion_manager) 的分支应该为 `pkg-controller__motion_manager` 
+
+
+
 
 ## 项目文档
 

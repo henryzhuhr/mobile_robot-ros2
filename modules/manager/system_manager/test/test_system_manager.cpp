@@ -1,15 +1,15 @@
 #include "state_interfaces/msg/system_state.hpp"
 #include "state_interfaces/srv/update_state.hpp"
 
+#include "system_state/services.hpp"
 #include "system_manager/system_manager.hpp"
 
 class SystemManager_Tester : public rclcpp::Node
 {
 private:
-    bool work_permit;// 该节点是否工作许可标识
+    bool work_permit; // 该节点是否工作许可标识
     // 声明客户端
     rclcpp::Client<S_US>::SharedPtr client_;
-    const std::string update_state_server_name = "__server__update_system_state"; // 系统状态更新的服务名称
 
     void result_callback_(rclcpp::Client<S_US>::SharedFuture result_future)
     {
@@ -21,18 +21,17 @@ public:
     SystemManager_Tester(std::string node_name) : Node(node_name)
     {
         RCLCPP_INFO(this->get_logger(), "节点已启动：%s.", node_name.c_str());
-        client_ = this->create_client<S_US>(this->update_state_server_name);
+        client_ = this->create_client<S_US>(SystemState::services::update_state);
     }
     ~SystemManager_Tester()
     {
-
-        this->update_system_state(                                //
-            static_cast<uint8_t>(SystemState::StateGroup::TASK),  //
-            static_cast<uint8_t>(SystemState::Task::JOY_CONTROL), //
-            false                                                 //
+        this->update_system_state(                                 //
+            static_cast<uint8_t>(SystemState::StateGroup::SENSOR), //
+            static_cast<uint8_t>(SystemState::Sensor::JOY),        //
+            false                                                  //
         );
-
-        RCLCPP_INFO(this->get_logger(), "注销");
+        RCLCPP_INFO(this->get_logger(), "节点已关闭：%s.", this->get_name());
+        ‰
     };
 
     void update_system_state(uint8_t group, uint8_t id, bool state = true)
@@ -44,10 +43,10 @@ public:
             // 等待时检测rclcpp的状态
             if (!rclcpp::ok())
             {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for service[%s]...", update_state_server_name.c_str());
+                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for service[%s]...", SystemState::services::update_state.c_str());
                 return;
             }
-            RCLCPP_INFO(this->get_logger(), "Waiting for the server[%s] to go online", update_state_server_name.c_str());
+            RCLCPP_INFO(this->get_logger(), "Waiting for the server[%s] to go online", SystemState::services::update_state.c_str());
         }
 
         // 2.构造请求的
@@ -76,13 +75,17 @@ int main(int argc, char const *argv[])
 {
     rclcpp::init(argc, argv);
 
-    auto node = std::make_shared<SystemManager_Tester>("service_client_01");
-    node->update_system_state(                                //
-        static_cast<uint8_t>(SystemState::StateGroup::TASK),  //
-        static_cast<uint8_t>(SystemState::Task::JOY_CONTROL), //
-        true                                                  //
+    auto node = std::make_shared<SystemManager_Tester>("test_system_manager");
+
+    // 节点启动时，向系统状态管理器注册
+    node->update_system_state(                                 //
+        static_cast<uint8_t>(SystemState::StateGroup::SENSOR), //
+        static_cast<uint8_t>(SystemState::Sensor::JOY),        //
+        true                                                   //
     );
     rclcpp::spin(node);
+    // TODO: 在节点意外退出时，应该向系统状态管理器注销，但是不知道为什么无法调用析构函数
+
     rclcpp::shutdown();
     return 0;
 }
