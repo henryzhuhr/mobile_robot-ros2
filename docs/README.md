@@ -2,24 +2,39 @@
 
 ## 项目结构
 
+![系统架构](./images/system-architecture.jpg)
+
 该项目的 ROS2 工作空间 `modules` ，功能结构分组及其所包含的功能包如下:
 - **common**: 通用功能模块。包括全局的系统状态码定义、通用的工具函数等
-  - system_state: 系统状态码和错误码的全局定义
-  - utils: 通用工具函数 (未开发)
+  - 🔄 system_state: 系统状态码、错误码的全局定义，模块的注册序号，话题、服务、参数的全局定义
+  - 💠 utils: 通用工具函数
 - **interfaces**: 数据接口。 包括各个模块之间的数据接口、消息结构定义
+  - ✅ state_interfaces: 系统状态接口和服务接口
 - **controller**: 系统控制模块。包括底盘控制、机械臂控制等
-  - [motion_manager](./modules/controller/motion_manager.md): 运动控制模块
+  - 🔄 [motion_manager](./modules/controller/motion_manager.md): 运动控制模块
 - **manager**: 系统管理模块。包括系统状态管理、任务管理等
+  - **launch**: ROS2 启动文件
+  - ✅ [system_manager](./modules/manager/system_manager.md): 系统状态管理模块
+  - ✅ [task_manager](./modules/manager/system_manager.md): 任务管理模块
 - **data_transmission**: 数据传输模块。包括串口通信、网络通信等
-  - [dt_mqtt](./modules/data_transmission/dt_mqtt.md): MQTT 通信模块
-  - [dt_rtmp](./modules/data_transmission/dt_rtmp.md): 视频推流模块，RTMP 协议
+  - 🔄 [dt_mqtt](./modules/data_transmission/dt_mqtt.md): MQTT 通信模块
+  - 🚧 [dt_rtmp](./modules/data_transmission/dt_rtmp.md): 视频推流模块，RTMP 协议
 - **sensors**: 传感器模块。包括各种传感器的驱动、数据处理等
+  - 🔄 sensor_joy: 手柄控制模块
+  - 🔄 sensor_uwb: UWB 定位模块
 - **vision**: 视觉算法模块。包括各种视觉算法的实现
+  - ✅ vision_lanedet: 车道线检测算法
+  - 🚧 vision_objdet: 目标检测算法
+  - 💠 vision_objtrack: 目标检测算法
 - **navigation**: 导航模块 (未开发)
 - **app**: 应用程序
-- **launch**: ROS2 启动文件
+  - 💠 app_web: web 端控制面板 (Vue3 + flask)
 
-![系统架构](./images/system-architecture.jpg)
+
+> ✅ 开发完成, 🔄 测试中, 🚧 开发中, 🐛 修复中, ⛔️ 已下线, 💠 计划开发
+
+
+
 
 ## 分支管理
 
