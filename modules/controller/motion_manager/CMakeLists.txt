@@ -23,7 +23,7 @@ endif()
 
 
 # export WORKSPACE=$PWD
-include_directories($ENV{WORKSPACE}/sources/common/system_state/include)
+include_directories($ENV{WORKSPACE}/modules/common/system_state/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${JSON_INC_PATH})
 

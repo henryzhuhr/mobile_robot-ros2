@@ -1,69 +1,46 @@
-# 移动机器人控制 ROS2
+# 移动机器人开发文档
 
-基于 Jetson Nano
+## 项目结构
 
-## 🍽️ 准备工作
+该项目的 ROS2 工作空间 `modules` ，功能结构分组及其所包含的功能包如下:
+- **common**: 通用功能模块。包括全局的系统状态码定义、通用的工具函数等
+  - system_state: 系统状态码和错误码的全局定义
+  - utils: 通用工具函数 (未开发)
+- **interfaces**: 数据接口定义。包括各个模块之间的数据接口、消息结构定义
+- **controller**: 控制模块。包括底盘控制、机械臂控制等
+  - [motion_manager](./modules/controller/motion_manager.md): 运动控制模块
+- **manager**: 管理模块。包括系统状态管理、任务管理等
+- **data_transmission**: 数据传输模块。包括串口通信、网络通信等
+  - [dt_mqtt](./modules/data_transmission/dt_mqtt.md): MQTT 通信模块
+  - [dt_rtmp](./modules/data_transmission/dt_rtmp.md): 视频推流模块，RTMP 协议
+- **sensors**: 传感器模块。包括各种传感器的驱动、数据处理等
+- **vision**: 视觉算法模块。包括各种视觉算法的实现
+- **navigation**: 导航模块 (未开发)
+- **app**: 应用程序
+- **launch**: ROS2 启动文件
 
-### 摄像头畸变矫正
+![系统架构](./images/system-architecture.jpg)
 
-使用 [Opencv 官方棋盘格](https://docs.opencv.org/2.4/_downloads/pattern.png) 进行相机标定
+## 分支管理
 
-<!-- 得出标定板的内部行列交点个数 `6 * 9` -->
+项目使用 git 进行版本控制，每个功能模块都应该新建一个分支进行开发，开发完成后合并到 `dev` 分支，`dev` 分支的代码经过测试后 PR 到 `main` 分支。根据系统架构中功能模块的重要程度不同，有两种分支命名规则：
 
-<!-- ![棋盘格标定点](./images/camera-distortion-correction--checkerboard.png) -->
+1. **核心模块命名规则**
 
-`camera-distortion-correction.py`
+  核心模块是整个系统的运行的基础，因此核心模块的分支应该为 `core-<group>` 结构，`<group>` 为功能分组，并且不再进行子模块分组，核心模块包括：
+  - `core-manager`: 包括 数据接口 (interfaces) 、 系统管理 (manager) 和 启动文件 (launch) 
+  - `core-common` 通用功能包 (common)
 
+1. **功能模块命名规则**
 
-## 📦 功能包
-### 视频流 cpp_video_streamer
+  其他子模块的开发和测试是完全可以独立的，因此，其他功能包的分支应该为 `pkg-<group>__<package_name>` 结构，`<group>` 为功能分组，`<package_name>` 为功能包名，中间用双下划线 `__` 分隔。
 
-目录: `src/cpp_video_streamer`
+  例如，控制模块 (controller) 中运动控制 (motion_manager) 的分支应该为 `pkg-controller__motion_manager` 
 
-包含两个节点 
-- 读取视频节点 `node_video_reader`
-- 显示视频节点 `node_video_viewer`
+## 项目文档
 
-#### 读取视频节点 node_video_reader
-参数
-- `source`: 视频源，可选择如下
-  - `camera`: 默认，从摄像头读取
-  - `<file/url>`:  文件名或者网络url
-#### 显示视频节点 node_video_viewer
-
-
-
-## 🚧 常见问题和解决方案
-
-
-### Jetson Nano 上串口权限问题
+项目文档也按照功能分组，放置在 `docs/modules` 中 ，启动项目的文档命令：
 ```shell
-could not open port /dev/ttyUSB0: [Errno 13] Permission denied: '/dev/ttyUSB0
+yarn
+yarn docs:dev
 ```
-把自己的用户加入到dialout组
-```shell
-sudo usermod -aG dialout ${USER}  # user 替换为自己的用户名
-reboot							              # 必须要重启一下才会生效
-```
-
-### 串口名称问题
-
-不同系统下串口名称可能不一样，需要根据实际情况修改，常见的串口名称如下：
-- **Linux**: `/dev/ttyUSB*`, `/dev/ttyTHS*`(Jetson Nano 板载串口), `/dev/ttyACM*`(STM32下载/串口线)
-- **Mac**: `/dev/tty.usbserial-*`, `/dev/tty.usbmodem-*`(STM32下载/串口线)
-- **Jetson Nano** (参考 [User Guide](https://developer.nvidia.cn/embedded/learn/jetson-nano-2gb-devkit-user-guide))，有两组 UART: 
-  - `/dev/ttyTHS1`: `UART_TX1` (8) / `UART_RX1` (10) ([40-Pin Header (J6)](https://developer.nvidia.cn/embedded/learn/jetson-nano-2gb-devkit-user-guide#id-.JetsonNano2GBDeveloperKitUserGuidevbatuu_v1.0-40-PinHeader(J6)))
-  - `/dev/ttyTHS2`: `UART_RX2` (3) / `UART_TX2` (4) ([12-Pin Button Header (J12)](https://developer.nvidia.cn/embedded/learn/jetson-nano-2gb-devkit-user-guide#id-.JetsonNano2GBDeveloperKitUserGuidevbatuu_v1.0-12-PinButtonHeader(J12)))
-  > 这里 UART 编号和网上的教程略有不同，这里参考的是官方文档
-
-
-
-
-## 🔧 调试记录
-
-### 车道线自动行进调试
-
-- 2021.08.06:  
-  1. 当前直走没有大问题
-  2. 但是修正航向角时，转向存在转过头的问题，然后只能检测单线，导致无法正确前进
-  3. 需要增加根据单车道线行进的逻辑。是否需要透视变换，把车道线拉垂直？
