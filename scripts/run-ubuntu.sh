@@ -1,4 +1,6 @@
-source scripts/constant.sh
+script_dir=$(cd $(dirname $0); pwd)
+
+source $script_dir/env/constant.sh
 
 export WORKSPACE=$PWD
 echo "work dir ${WORKSPACE}"
@@ -19,9 +21,15 @@ source .env/ros2/bin/activate
 
 
 BUILD_LIST=(
-    # state_interfaces # 系统状态接口
-    # system_manager # 系统管理
+    # 接口
+    state_interfaces # 系统状态接口
 
+    # 通用功能包
+    system_state # 系统状态
+    
+    # 系统控制
+
+    system_manager # 系统管理
     motion_manager # 运动控制管理(包括底层数据收集)
 
     # dt_mqtt_py # 数据传输
@@ -52,7 +60,7 @@ source install/setup.bash
 # ros2 launch py_launch car.launch.py
 # ros2 run system_manager system_manager
 # ros2 run dt_mqtt_py dt_mqtt
-ros2 run motion_manager motion_manager_node
+# ros2 run motion_manager motion_manager_node
 
 
 

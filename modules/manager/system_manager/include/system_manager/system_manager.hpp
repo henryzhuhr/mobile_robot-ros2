@@ -9,8 +9,7 @@
 
 #include "system_state/state.hpp"
 #include "system_state/error.hpp"
-
-
+#include "system_state/types.hpp"
 /**
  * @brief 系统状态管理器
  */

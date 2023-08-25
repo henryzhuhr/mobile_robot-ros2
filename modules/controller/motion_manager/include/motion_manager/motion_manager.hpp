@@ -6,6 +6,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include "system_state/types.hpp"
 #include "system_state/state.hpp"
 #include "system_state/error.hpp"
 #include "state_interfaces/msg/speed.hpp"

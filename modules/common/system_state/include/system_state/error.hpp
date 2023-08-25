@@ -1,6 +1,7 @@
-#ifndef SYSTEM_MANAGER__SYSTEM_MANAGER__ERROR_HPP
-#define SYSTEM_MANAGER__SYSTEM_MANAGER__ERROR_HPP
-#include <rclcpp/rclcpp.hpp>
+#ifndef COMMON__SYSTEM_STATE__ERROR_HPP
+#define COMMON__SYSTEM_STATE__ERROR_HPP
+
+
 namespace SystemState
 {
     /**
@@ -38,4 +39,4 @@ namespace SystemState
         SERIAL_UNKOOWN_ERROR,         // 串口未知错误
     };
 }
-#endif // SYSTEM_MANAGER__SYSTEM_MANAGER__ERROR_HPP
+#endif // COMMON__SYSTEM_STATE__ERROR_HPP

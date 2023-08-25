@@ -2,8 +2,8 @@
 WORKDIR=$PWD
 echo "work dir ${WORKDIR}"
 
-mkdir -p $WORKDIR/sources/common
-cd $WORKDIR/sources/common
+mkdir -p $WORKDIR/modules/common
+cd $WORKDIR/modules/common
 
 
 ros2 pkg create --build-type ament_cmake system_state \

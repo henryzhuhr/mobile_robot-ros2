@@ -14,11 +14,11 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
 find_package(state_interfaces REQUIRED)
+find_package(system_state REQUIRED)
 find_package(jsoncpp REQUIRED)
 
 
-# export WORKSPACE=$PWD
-include_directories($ENV{WORKSPACE}/sources/common/system_state/include)
+include_directories(${system_state_INCLUDE_DIRS}/include) # install/system_state/include/include 被嵌套了一层
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${JSON_INC_PATH})
 

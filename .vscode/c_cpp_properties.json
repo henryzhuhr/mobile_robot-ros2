@@ -13,11 +13,11 @@
                 "libs/jsoncpp/include",
                 // "install/state_interfaces/include/state_interfaces",
                 "install/state_interfaces/include",
-                "sources/common/system_state/include",
-                "sources/controller/motion_manager/serial/include",
-                "sources/manager/system_manager/include",
-                "sources/controller/motion_manager/include",
-                "sources/video_streamer_cpp/include"
+                "modules/common/system_state/include",
+                "modules/controller/motion_manager/serial/include",
+                "modules/manager/system_manager/include",
+                "modules/controller/motion_manager/include",
+                "modules/video_streamer_cpp/include"
             ],
             "intelliSenseMode": "linux-gcc-arm64",
             "compilerPath": "/usr/bin/gcc",
