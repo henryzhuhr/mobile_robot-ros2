@@ -78,12 +78,6 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "__nullptr": "cpp",
-        "__node_handle": "cpp",
-        "__bit_reference": "cpp",
-        "__config": "cpp",
-        "__locale": "cpp",
-        "__string": "cpp",
-        "locale": "cpp"
+        "__nullptr": "cpp"
     },
 }

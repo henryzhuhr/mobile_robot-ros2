@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'pkg_node_py'
+package_name = 'base_node_py'
 
 setup(
     name=package_name,
