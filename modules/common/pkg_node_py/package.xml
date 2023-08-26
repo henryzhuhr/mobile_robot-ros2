@@ -1,14 +1,13 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>motion_manager_py</name>
+  <name>pkg_node_py</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="26506195@qq.com">ubuntu</maintainer>
+  <maintainer email="296506195@qq.com">ubuntu</maintainer>
   <license>TODO: License declaration</license>
 
   <depend>rclpy</depend>
-  <depend>std_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

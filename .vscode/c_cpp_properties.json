@@ -14,6 +14,7 @@
                 // "install/state_interfaces/include/state_interfaces",
                 "install/state_interfaces/include",
                 "modules/common/system_state/include",
+                "modules/common/pkg_node/include",
                 "modules/controller/motion_manager/serial/include",
                 "modules/manager/system_manager/include",
                 "modules/controller/motion_manager/include",
