@@ -55,7 +55,7 @@ BUILD_LIST=(
     # sensor_uwb_py     # uwb 数据采集功能
     # vision_lanedet_py     # 视觉 车道线检测
     # controller_py
-    # py_launch
+    roslaunch
 )
 for item in ${BUILD_LIST[@]}; do
     echo ""

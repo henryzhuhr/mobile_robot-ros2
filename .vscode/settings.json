@@ -4,7 +4,8 @@
         "install/state_interfaces/lib/python3.8/site-packages",
         "modules/common/system_state_py",
         "modules/common/base_node_py/base_node",
-        "/opt/ros/galactic/lib/python3.8/site-packages"
+        "/opt/ros/galactic/lib/python3.8/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages"
     ],
     "python.analysis.extraPaths": [
         "install/interfaces/lib/python3.8/site-packages",
@@ -12,6 +13,7 @@
         "modules/common/system_state_py",
         "modules/common/base_node_py/base_node",
         "/opt/ros/galactic/lib/python3.8/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages"
         
     ],
     "files.associations": {
