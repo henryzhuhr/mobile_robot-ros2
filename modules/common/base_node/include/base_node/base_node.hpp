@@ -41,7 +41,7 @@ public:
      */
     uint64_t InitNode(uint8_t state_group,
                       uint8_t state_id,
-                      TIME_S heartbeat_interval_sec = TIME_S(10000)); // 初始化节点
+                      TIME_S heartbeat_interval_sec = TIME_S(10)); // 初始化节点
 };
 
 #endif // COMMON__BASE_NODE__BASE_NODE_HPP

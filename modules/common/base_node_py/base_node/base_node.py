@@ -12,7 +12,7 @@ class BaseNode(Node):
         self.update_state__client_=self.create_client(SI_S_US, SystemState.services.update_state)
         self.__heartbeat_timer_:Timer=None
 
-    def InitNode(self,state_group:int,state_id:int,heartbeat_interval_sec:float=1.0)->int:
+    def InitNode(self,state_group:int,state_id:int,heartbeat_interval_sec:float=1.0,debug=False)->int:
         """
         初始化节点. 设置节点的状态组和状态ID
         ==================
@@ -20,6 +20,7 @@ class BaseNode(Node):
         - `state_group`: 状态组. 查看 `SystemState::StateGroup`
         - `state_id`: 状态ID. 查看 `SystemState::Task`、`SystemState::Sensor`、`SystemState::Vison`
         - `heartbeat_interval`: 心跳包发送间隔，默认为 10s. 心跳检测是为了检测节点是否在线，因此不应该太频繁
+        - `debug`: 是否为调试模式. 调试模式下不会发送心跳包
         """
         if state_group>SystemState.GROUP_NUM_MAX:
             return SystemState.ErrorCode.STATE_UPDATE_GROUP_OVERFLOW
@@ -29,8 +30,8 @@ class BaseNode(Node):
         self.__update_state_.state_group=state_group
         self.__update_state_.state_id=state_id
         self.__update_state_.state=SystemState.State.IDLE
-
-        self.__heartbeat_timer_=self.create_timer(heartbeat_interval_sec, self.__UpdateState)
+        if not debug:
+            self.__heartbeat_timer_=self.create_timer(heartbeat_interval_sec, self.__UpdateState)
         return 0
 
     def __UpdateState(self):

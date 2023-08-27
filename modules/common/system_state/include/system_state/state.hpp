@@ -14,9 +14,10 @@ namespace SystemState
     enum class StateGroup : uint8_t
     {
         NONE = 0,
-        TASK = 1,
-        SENSOR,
-        VISION,
+        TASK = 1,   // 任务
+        CONTROLLER, // 控制器
+        SENSOR,     // 传感器
+        VISION,     // 视觉
     };
 
     /**
@@ -33,6 +34,15 @@ namespace SystemState
         {
             IDLE = 0,        // 空闲状态
             JOY_CONTROL = 1, // 手柄控制任务
+        };
+        /**
+         * 系统控制器列表 至多 64 个
+         * 枚举序号标识 位 0~63
+         */
+        enum class Controller : uint8_t
+        {
+            NONE = 0,    
+            MECANUM_WHEEL_CAR = 1, // 麦克纳姆轮小车
         };
         /**
          * 系统预设传感器列表 至多 64 个
@@ -68,6 +78,7 @@ namespace SystemState
         PAUSE,    // 暂停状态
         ERROR,    // 错误状态
         REJECT,   // 拒绝状态
+        OFFLINE,  // 离线状态
     };
 
 }

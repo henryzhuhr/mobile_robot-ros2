@@ -6,24 +6,33 @@ class SystemState:
 
     class topics:
         system_state = "system_state"
+        set_speed = "topic__set_speed"
 
     GROUP_NUM_MAX= 255
     ID_NUM_MAX=255
+
     class StateGroup:
         NONE=0
         TASK=1
-        SENSOR=2
-        VISION=3
+        CONTROLLER=2
+        SENSOR=3
+        VISION=4
+        
 
     class StateID:
         class Task:
             IDLE=0
             JOY_CONTROL=1
+
         class Sensor:
             IDLE=0
             JOY=1
             USB_RGB_CAMERA=2
             SCI_RGB_CAMERA=2
+        class Controller:
+            NONE=0
+            MECANUM_WHEEL_CAR=1
+
         class Vison:
             IDLE=0
             JOY=1
