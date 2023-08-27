@@ -1,6 +1,12 @@
-# 移动机器人控制 ROS2
+# 移动机器人
 
-基于 Jetson Nano
+```shell
+git clone git@github.com:HenryZhuHR/mobile_robot-ros2.git
+cd mobile_robot-ros2
+git checkout -b dev origin/dev
+git submodule init
+git submodule update
+```
 
 
 ```shell

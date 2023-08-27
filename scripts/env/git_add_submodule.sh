@@ -11,15 +11,6 @@
 #    or: git submodule [--quiet] sync [--recursive] [--] [<path>...]
 #    or: git submodule [--quiet] absorbgitdirs [--] [<path>...]
 
-rm -rf modules/controller
-git rm -r --cached modules/controller
-git submodule add -b main -f git@github.com:HenryZhuHR/mobile_robot-controller.git  modules/controller
-
-rm -rf modules/manager
-git rm -r --cached modules/manager
-git submodule add -b main git@github.com:HenryZhuHR/mobile_robot-manager.git  modules/manager
-
-# cd modules/controller
-rm -rf motion_manager/seiral
-git rm -r --cached motion_manager/seiral
-git submodule add -b main git@github.com:HenryZhuHR/serial-ros2.git motion_manager/serial
+rm -rf core
+git rm -r --cached core
+git submodule add -b dev git@github.com:HenryZhuHR/mobile_robot-core.git  core

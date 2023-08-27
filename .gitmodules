@@ -1,8 +1,4 @@
-[submodule "modules/manager"]
-	path = modules/manager
-	url = git@github.com:HenryZhuHR/mobile_robot-manager.git
-	branch = main
-[submodule "modules/controller"]
-	path = modules/controller
-	url = git@github.com:HenryZhuHR/mobile_robot-controller.git
-	branch = main
+[submodule "core"]
+	path = core
+	url = git@github.com:HenryZhuHR/mobile_robot-core.git
+	branch = dev
