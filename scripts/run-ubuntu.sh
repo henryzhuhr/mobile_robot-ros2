@@ -39,11 +39,12 @@ BUILD_LIST=(
 
     # 通用功能包
     system_state # 系统状态
+    base_node # 基本节点
     
     # 系统控制
 
-    system_manager # 系统管理
-    motion_manager # 运动控制管理(包括底层数据收集)
+    # system_manager # 系统管理
+    # motion_manager # 运动控制管理(包括底层数据收集)
 
     # dt_mqtt_py # 数据传输
     # dt_rtmp_py # 视频流数据

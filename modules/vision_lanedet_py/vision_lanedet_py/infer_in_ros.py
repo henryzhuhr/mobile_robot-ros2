@@ -133,7 +133,3 @@ def main(args=None):
     # when the garbage collector destroys the node object)
     minimal_subscriber.destroy_node()
     rclpy.shutdown()
-
-
-if __name__ == '__main__':
-    main()

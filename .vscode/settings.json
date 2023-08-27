@@ -1,13 +1,18 @@
 {
     "python.autoComplete.extraPaths": [
-        "install/car_controller_py/lib/python3.8/site-packages",
         "install/interfaces/lib/python3.8/site-packages",
-        "/opt/ros/humble/lib/python3.8/site-packages"
+        "install/state_interfaces/lib/python3.8/site-packages",
+        "modules/common/system_state_py",
+        "modules/common/base_node_py/base_node",
+        "/opt/ros/galactic/lib/python3.8/site-packages"
     ],
     "python.analysis.extraPaths": [
-        "install/car_controller_py/lib/python3.8/site-packages",
         "install/interfaces/lib/python3.8/site-packages",
-        "/opt/ros/humble/lib/python3.8/site-packages"
+        "install/state_interfaces/lib/python3.8/site-packages",
+        "modules/common/system_state_py",
+        "modules/common/base_node_py/base_node",
+        "/opt/ros/galactic/lib/python3.8/site-packages",
+        
     ],
     "files.associations": {
         "cctype": "cpp",

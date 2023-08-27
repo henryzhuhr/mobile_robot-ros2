@@ -8,20 +8,43 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(system_state REQUIRED)
+find_package(state_interfaces REQUIRED)
 
 
 include_directories(include)
+include_directories(${system_state_INCLUDE_DIRS}/include) # install/system_state/include/include 被嵌套了一层
+
+add_library(${PROJECT_NAME} SHARED
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/base_node.cpp
+)
+ament_target_dependencies(${PROJECT_NAME} rclcpp state_interfaces system_state)
+install(
+  TARGETS ${PROJECT_NAME} 
+  LIBRARY DESTINATION lib
+)
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+ament_export_include_directories(include)
+ament_export_include_directories(${system_state_INCLUDE_DIRS}/include)
+ament_export_libraries(${PROJECT_NAME})
+
+install(
+  TARGETS ${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # [Node] system_manager : 编译 链接 添加ros依赖 安装
-set(NODE_NAME ${PROJECT_NAME})
-add_executable(${NODE_NAME} 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/config_parse.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/system_manager.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/app/system_manager_node.cpp
-)
-target_link_libraries(${NODE_NAME} jsoncpp_lib)
-ament_target_dependencies(${NODE_NAME} rclcpp std_msgs state_interfaces)
-install(TARGETS ${NODE_NAME}  DESTINATION lib/${PROJECT_NAME})
+# set(NODE_NAME base_node_node)
+# add_executable(${NODE_NAME} 
+#   ${CMAKE_CURRENT_SOURCE_DIR}/src/base_node.cpp
+#   ${CMAKE_CURRENT_SOURCE_DIR}/app/base_node_main.cpp
+# )
+# # target_link_libraries(${NODE_NAME} jsoncpp_lib)
+# ament_target_dependencies(${NODE_NAME} rclcpp state_interfaces system_state)
+# install(TARGETS ${NODE_NAME} DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

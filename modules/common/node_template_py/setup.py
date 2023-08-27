@@ -1,7 +1,7 @@
 from setuptools import setup
 from setuptools import find_packages # https://zhuanlan.zhihu.com/p/460233022 4.1 包内必须要 __init__.py 文件
 
-package_name = 'base_node_py'
+package_name = 'node_template_py'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "base_node = base_node_py.base_node:main",
+            "node_template = node_template.node_template:main"
         ],
     },
 )

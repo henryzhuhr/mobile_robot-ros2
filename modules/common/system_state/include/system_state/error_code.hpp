@@ -9,8 +9,10 @@ namespace SystemState
     enum class ErrorCode : uint64_t
     {
         NO_ERROR = 0,                 // 没有错误
+        STATE_UPDATE_GROUP_OVERFLOW, // 系统状态更新时，分组超出范围
         STATE_UPDATE_GROUP_NOT_FOUND, // 系统状态更新时，未找到对应的状态分组
         STATE_UPDATE_ID_OVERFLOW,     // 系统状态更新时，状态ID超出范围
+        STATE_UPDATE_ID_NOT_FOUND,     // 系统状态更新时，未找到对应的状态
 
         // 文件相关错误码
         FILE_NOT_FOUND, // 文件未找到

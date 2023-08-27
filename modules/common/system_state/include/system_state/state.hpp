@@ -13,6 +13,7 @@ namespace SystemState
      */
     enum class StateGroup : uint8_t
     {
+        NONE = 0,
         TASK = 1,
         SENSOR,
         VISION,
@@ -59,14 +60,14 @@ namespace SystemState
     /**
      * @brief 系统状态
      */
-    enum class State
+    enum class State : uint8_t
     {
-        NONE = 0,    // 无状态
-        IDLE = 1,    // 空闲状态
-        RUNNING = 2, // 运行状态
-        PAUSE = 3,   // 暂停状态
-        ERROR = 4,   // 错误状态
-        REJECT = 5,  // 拒绝状态
+        NONE = 0, // 无状态
+        IDLE,     // 空闲状态，等待任务
+        RUNNING,  // 运行状态
+        PAUSE,    // 暂停状态
+        ERROR,    // 错误状态
+        REJECT,   // 拒绝状态
     };
 
 }
@@ -84,6 +85,8 @@ namespace SystemState
         static constexpr char LRED[] = "\033[01;31m";
         static constexpr char BLUE[] = "\033[00;34m";
         static constexpr char LBLUE[] = "\033[01;34m";
+        static constexpr char YELLOW[] = "\033[00;33m";
+        static constexpr char LYELLOW[] = "\033[01;33m";
 
     }
 }
