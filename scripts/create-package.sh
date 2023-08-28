@@ -2,8 +2,8 @@
 WORKDIR=$PWD
 echo "work dir ${WORKDIR}"
 
-mkdir -p $WORKDIR/modules/common
-cd $WORKDIR/modules/common
+mkdir -p $WORKDIR/modules/sensors
+cd $WORKDIR/modules/sensors
 
 
 ros2 pkg create system_state \
