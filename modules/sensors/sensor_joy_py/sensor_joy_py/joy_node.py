@@ -8,6 +8,7 @@ from sensor_msgs.msg import Joy
 from .types import JOY_KB_MAP
 
 from state_interfaces.msg import Speed
+from system_state import SystemState
 
 class SensorJOY(Node):
     def __init__(self,name):
@@ -36,9 +37,11 @@ class SensorJOY(Node):
         
         #--发布手柄消息
         self.joy_publishment = self.create_publisher(
-            Speed,"joy_publish", 10
+            Speed,SystemState.topics.joy_speed, 10
         )
         self.joy_publishment  # prevent unused variable warning
+
+        self.get_logger().info("\033[01;32mSensor_JOY Node Started\033[0m")
 
         
     def joy_callback(self, joy_msg: Joy):
@@ -60,7 +63,7 @@ class SensorJOY(Node):
         speed.z=js_l_x
 
         self.joy_publishment.publish(speed)
-        self.get_logger().info(f'发布手柄消息：{joy_msg.axes} {speed.x, speed.y, speed.z}')
+        # self.get_logger().info(f'发布手柄消息：{joy_msg.axes} {speed.x, speed.y, speed.z}')
 
 
 def main(args=None):

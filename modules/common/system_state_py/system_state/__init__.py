@@ -7,6 +7,7 @@ class SystemState:
     class topics:
         system_state = "system_state"
         set_speed = "topic__set_speed"
+        joy_speed = "topic__joy_speed"
 
     GROUP_NUM_MAX= 255
     ID_NUM_MAX=255

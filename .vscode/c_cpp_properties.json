@@ -7,18 +7,21 @@
                 "limitSymbolsToIncludedHeaders": false
             },
             "includePath": [
-                "/opt/ros/humble/include/**",
-                // "/opt/ros/galactic/include/",
+                // ROS 不同版本的路径不一样 
+                // "/opt/ros/humble/include/**",
+                "/opt/ros/galactic/include/",
+                // 第三方库
                 "/usr/include/opencv4",
                 "libs/jsoncpp/include",
+                // 接口头文件
                 // "install/state_interfaces/include/state_interfaces",
                 "install/state_interfaces/include",
-                //
+                // 
                 "modules/common/system_state/include",
                 "modules/common/base_node/include",
                 //
-                "core/controller/motion_manager/serial/include",
-                "core/controller/motion_manager/include",
+                "core/controller/motion_controller/serial/include",
+                "core/controller/motion_controller/include",
                 //
                 "core/manager/system_manager/include",
                 //

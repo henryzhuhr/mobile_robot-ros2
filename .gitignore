@@ -22,5 +22,5 @@ log/
 
 # Python
 *.py[cod]
-
+__pycache__/
 .env

@@ -21,8 +21,3 @@ git submodule update core
 # sudo apt install -y python3-venv
 bash scripts/env/init-py-env.sh
 ```
-
-python 环境安装 `bash scripts/py_install_dep.sh`
-
-
-

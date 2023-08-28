@@ -2,16 +2,16 @@
 WORKDIR=$PWD
 echo "work dir ${WORKDIR}"
 
-mkdir -p $WORKDIR/modules/sensors
-cd $WORKDIR/modules/sensors
+mkdir -p $WORKDIR/core/
+cd $WORKDIR/core/
 
 
-ros2 pkg create system_state \
-    --build-type ament_cmake \
-    --dependencies rclcpp
+# ros2 pkg create motion_controller \
+#     --build-type ament_cmake \
+#     --dependencies rclcpp
 
 
-ros2 pkg create system_state_py \
+ros2 pkg create roslaunch \
     --build-type ament_python \
     --dependencies rclpy
 
