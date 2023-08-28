@@ -9,7 +9,7 @@ namespace SystemState
     static const uint8_t GROUP_NUM_MAX = sizeof(uint8_t) << 3;
     static const uint8_t ID_NUM_MAX = sizeof(uint64_t) << 3;
     /**
-     * @brief 系统状态分组，用于区分系统状态，便于修改
+     * @brief 系统状态分组，用于区分系统中运行的不同组件
      */
     enum class StateGroup : uint8_t
     {

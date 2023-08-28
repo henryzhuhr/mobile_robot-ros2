@@ -26,7 +26,7 @@
   - 🔄 [dt_mqtt](./modules/data_transmission/dt_mqtt.md): MQTT 通信模块
   - 🚧 [dt_rtmp](./modules/data_transmission/dt_rtmp.md): 视频推流模块，RTMP 协议
 - **sensors**: 传感器模块。包括各种传感器的驱动、数据处理等
-  - 🔄 sensor_joy: 手柄
+  - ✅ [sensor_joy](./modules/sensors/sensor_joy.md): 手柄
   - 🔄 sensor_uwb: UWB 定位
 - **vision**: 视觉算法模块。包括各种视觉算法的实现
   - ✅ vision_lanedet: 车道线检测算法
@@ -41,7 +41,6 @@
 
 
 
-
 ## 分支管理
 
 项目使用 git 进行版本控制，每个功能模块都应该新建一个分支进行开发，开发完成后合并到 `dev` 分支，`dev` 分支的代码经过测试后 PR 到 `main` 分支。**功能模块命名规则**:
@@ -51,8 +50,6 @@
 例如，传感器 (sensors) 中摄像头 (camera) 的分支应该为 `pkg-sensors__camera` 
 
 
-
-
 ## 项目文档
 
 项目文档也按照功能分组，放置在 `docs/core` / `docs/modules` 中 ，启动项目的文档命令：
@@ -60,5 +57,3 @@
 yarn
 yarn docs:dev
 ```
-
-pkg-sensors__joy

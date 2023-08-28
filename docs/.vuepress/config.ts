@@ -12,7 +12,7 @@ export default defineUserConfig({
   lang: 'zh-CN',
   title: 'ROS2移动机器人',
   description: '开发文档',
-  base: "/mobile_robot-ros2.docs/", // 从私有仓库部署到公有仓库时需要修改
+  base: "/mobile_robot-ros2/",
 
   markdown: markdownOptions,
   theme: defaultTheme({
