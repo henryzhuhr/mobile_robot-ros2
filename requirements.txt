@@ -6,7 +6,7 @@ numpy # ==1.20.2
 setuptools==58.2.0
 
 pyserial
-autopep8
+black
 # opencv-python
 # pycuda
 

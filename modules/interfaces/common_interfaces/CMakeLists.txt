@@ -24,12 +24,16 @@ find_package(sensor_msgs REQUIRED)# 消息依赖
 
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Lanes.msg" # 车道线消息格式
-  "msg/ImageViewer.msg" # 
-  # 车辆状态
-  "msg/Location.msg" # 定位信息
-  "msg/Speed.msg" # 速度状态
-  "msg/RuntimeState.msg" # 运行状态
+  # "msg/Lanes.msg" # 车道线消息格式
+  # "msg/ImageViewer.msg" # 
+  # # 车辆状态
+  # "msg/Location.msg" # 定位信息
+  # "msg/Speed.msg" # 速度状态
+  # "msg/RuntimeState.msg" # 运行状态
+  "msg/Gyroscope.msg" # 陀螺仪数据
+  "msg/Acceleration.msg" # 加速度计数据
+  "msg/Attitude.msg" # 加速度计数据
+  "msg/Imu6Axis.msg" # 6轴IMU数据
   DEPENDENCIES std_msgs sensor_msgs
 )
 

@@ -8,6 +8,8 @@ class SystemState:
         system_state = "system_state"
         set_speed = "topic__set_speed"
         joy_speed = "topic__joy_speed"
+        imu = "topic__imu"
+        odometry = "topic__odometry"
 
     GROUP_NUM_MAX= 255
     ID_NUM_MAX=255
@@ -69,3 +71,4 @@ class SystemState:
         LBLUE="\033[1;34m"
         YELLOW="\033[0;33m"
         LYELLOW="\033[1;33m"
+

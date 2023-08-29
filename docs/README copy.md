@@ -43,6 +43,7 @@ could not open port /dev/ttyUSB0: [Errno 13] Permission denied: '/dev/ttyUSB0
 把自己的用户加入到dialout组
 ```shell
 sudo usermod -aG dialout ${USER}  # user 替换为自己的用户名
+sudo usermod -aG dialout zx  # user 替换为自己的用户名
 reboot							              # 必须要重启一下才会生效
 ```
 

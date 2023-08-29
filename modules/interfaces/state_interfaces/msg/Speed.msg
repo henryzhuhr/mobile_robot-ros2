@@ -1,3 +1,3 @@
-float32 x
-float32 y
-float32 z
+float32 x 0
+float32 y 0
+float32 z 0

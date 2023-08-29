@@ -24,10 +24,19 @@ find_package(std_msgs REQUIRED)# 消息依赖
 
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  # -- 消息
+  "msg/SystemState.msg" # 系统状态
+  # 传感器数据
+  "msg/Gyroscope.msg" # 陀螺仪数据
+  "msg/Acceleration.msg" # 加速度计数据
+  "msg/Attitude.msg" # 加速度计数据
+  "msg/Imu6Axis.msg" # 6轴IMU数据
+  "msg/Odometry.msg" # 里程计数据
   # 车辆状态
   "msg/Speed.msg" # 系统状态
-  "msg/SystemState.msg" # 系统状态
-  # 服务
+
+
+  # -- 服务
   "srv/UpdateState.srv" # 更新状态
   DEPENDENCIES std_msgs
 )
