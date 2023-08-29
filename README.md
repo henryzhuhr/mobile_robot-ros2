@@ -1,6 +1,6 @@
 # 移动机器人
 
-
+## 环境配置
 ```shell
 git clone git@github.com:HenryZhuHR/mobile_robot-ros2.git
 cd mobile_robot-ros2
@@ -21,3 +21,10 @@ git submodule update core
 # sudo apt install -y python3-venv
 bash scripts/env/init-py-env.sh
 ```
+
+
+## 贡献者
+
+<a href="https://github.com/eryajf/learn-github/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=eryajf/learn-github" />
+</a>
