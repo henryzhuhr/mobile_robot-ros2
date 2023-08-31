@@ -1,5 +1,14 @@
 # 移动机器人开发文档
 
+## 项目简介
+
+涉及技术栈: 
+- 语言层: Python3, C++
+- 框架: ROS2, PyTorch,  TensorRT
+- 库: OpenCV, TensorRT, MQTT, RTMP
+- 软件包管理: CMake
+- 软件开发相关: Git, Github Actions, VSCode, Docker
+
 ## 项目结构
 
 ![系统架构](./images/system-architecture.jpg)
@@ -61,6 +70,6 @@ yarn docs:dev
 
 ## 开发贡献
 
-<a href="https://github.com/eryajf/learn-github/graphs/contributors">
+<a href="https://github.com/HenryZhuHR/mobile_robot-ros2/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=eryajf/learn-github" />
 </a>
