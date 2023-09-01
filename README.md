@@ -23,8 +23,6 @@ bash scripts/env/init-py-env.sh
 ```
 
 
-## 贡献者
-
-<a href="https://github.com/eryajf/learn-github/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=eryajf/learn-github" />
-</a>
+## 开发贡献
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->

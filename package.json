@@ -6,8 +6,8 @@
   "author": "HenryZhuHR <296506195@qq.com>",
   "license": "MIT",
   "scripts": {
-    "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:dev": "vuepress dev core/docs",
+    "docs:build": "vuepress build core/docs"
   },
   "devDependencies": {
     "vuepress": "^2.0.0-beta.66"

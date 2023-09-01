@@ -3,7 +3,7 @@ name: docs
 on:
   # 每当 push 到 main 分支时触发部署
   push:
-    branches: [dev]
+    branches: [actions]
   # 手动触发部署
   workflow_dispatch:
 
@@ -12,10 +12,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      
+      - name: Checkout this
+        # https://github.com/actions/checkout
+        # 拉取私有子模块参考: https://github.com/actions/checkout/issues/924#issuecomment-1563701878
+        uses: actions/checkout@v3
+        # with:
+        #   ssh-key: ${{ secrets.SSH_KEY }}
+        #   submodules: true
+
+      # - name: Checkout core
+      #   # https://github.com/actions/checkout
+      #   # https://zhuanlan.zhihu.com/p/408319831
+      #   # Makesure PAT has repo scope
+      #   uses: actions/checkout@v3
+      #   with:
+      #     repository: HenryZhuHR/mobile_robot-core
+      #     path: core
+      #     token: ${{ secrets.MOBILE_ROBOT_CORE_SECRET }} # `GH_PAT` is a secret that contains your PAT
+      #     fetch-depth: 1
+          
+      - name: Contribute List 
+        # https://github.com/marketplace/actions/contribute-list
+        uses: akhilmhdh/contributors-readme-action@v2.3.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # “最近更新时间” 等 git 日志相关信息，需要拉取全部提交记录
-          fetch-depth: 0
+          use_username: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -44,3 +67,4 @@ jobs:
         env:
           # @see https://docs.github.com/cn/actions/reference/authentication-in-a-workflow#about-the-github_token-secret
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
