@@ -45,4 +45,14 @@ yarn docs:dev
 
 ## 开发贡献
 <!-- readme: contributors -start -->
+<table>
+<tr>
+    <td align="center">
+        <a href="https://github.com/HenryZhuHR">
+            <img src="https://avatars.githubusercontent.com/u/38650110?v=4" width="100;" alt="HenryZhuHR"/>
+            <br />
+            <sub><b>HenryZhuHR</b></sub>
+        </a>
+    </td></tr>
+</table>
 <!-- readme: contributors -end -->
