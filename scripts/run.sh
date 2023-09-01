@@ -12,18 +12,28 @@ pip3 install $public_dir/pyserial-3.5-py2.py3-none-any.whl
 rm -rf install build log
 
 source ~/.bashrc
-source /opt/ros/humble/install/setup.bash
+source /opt/ros/foxy/install/setup.bash
 
-# colcon build
-# colcon build --packages-select vision_lanedet_interfaces
-# colcon build --packages-select car_controller_py
-
-colcon build --packages-select py_launch
-colcon build --packages-select car_controller_py
-
+BUILD_LIST=(
+    "interfaces" # 统一接口
+    "video_streamer_cpp" # 视频流
+    "vision_lanedet_py"     # 视觉 车道线检测
+    "controller_py"
+    "py_launch"
+)
+for item in ${BUILD_LIST[@]}; do
+    echo ""
+    echo "${LGREEN}Build: ${item}${DEFAULT}"
+    colcon build --packages-select ${item} \
+        --cmake-args -DCMAKE_BUILD_TYPE=Debug
+    source install/setup.bash
+done
 source install/setup.bash
-# ros2 launch py_launch run_all_nodes.launch.py
 
-# ros2 run car_controller_py auto_control_lanedet
 
-ros2 launch py_launch run_manul_control_car.launch.py
+which python
+ext_python_path=$(python -c 'import site; print(":".join(site.getsitepackages()))')
+export PYTHONPATH=$PYTHONPATH:$ext_python_path
+
+# ros2 launch py_launch cpp_video_streamer-video_reader.launch.py
+ros2 launch py_launch car.launch.py

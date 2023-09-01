@@ -1,0 +1,5 @@
+uint8 state_group
+uint8 state_id
+uint8 state
+---
+uint64 error_code

@@ -1,0 +1,4 @@
+[submodule "core"]
+	path = core
+	url = git@github.com:HenryZhuHR/mobile_robot-core.git
+	branch = dev

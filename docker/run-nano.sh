@@ -15,12 +15,14 @@ DOCKER_ROOT="/root/mobile_robot"	# where the project resides inside docker
 
 # generate mount commands
 DATA_VOLUME=" \
---volume $PWD/ros:$DOCKER_ROOT "
+--volume $PWD/src:$DOCKER_ROOT/src
+--volume $PWD/public:$DOCKER_ROOT/public
+--volume $PWD/scripts:$DOCKER_ROOT/scripts"
 
 # parse user arguments
 
 # USER_COMMAND="ros2 launch py_launch mobile_robot/package.yaml" 
-USER_COMMAND="bash run.sh"
+USER_COMMAND="bash scripts/run.sh"
 ROS_DISTRO="humble" #  , noetic, foxy, galactic, humble, iron
 
 CONTINUE_RUN_WITHOUT_CONFIRM=false
@@ -218,7 +220,7 @@ if [ $ARCH = "aarch64" ]; then
     fi
 
     # 挂载 /dev/ttyTH1 串口 40pin引脚上 8/10 
-    /dev/ttyTH
+    # /dev/ttyTH
     USER_DEVICE="$USER_DEVICE --device=/dev/ttyTH1 "
 
 

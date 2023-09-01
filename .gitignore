@@ -3,6 +3,8 @@ tmp/
 tmps/
 temp/
 temps/
+libs/
+downloads/
 
 
 weights/
@@ -20,3 +22,5 @@ log/
 
 # Python
 *.py[cod]
+__pycache__/
+.env

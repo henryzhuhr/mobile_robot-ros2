@@ -1,0 +1,14 @@
+{
+    "mqtt": {
+        "protocol": "tcp",
+        "client_id": "mqttjs_123456789",
+        "host": "192.168.64.22",
+        "port": 1883,
+        "username": "test",
+        "password": "test123456"
+    },
+    "rtmp": {
+        "protocol": "tcp",
+        "host": "localhost"
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "description": {
+        "en": "Wire_joy",
+        "zh": "有线手柄",
+        "tip":"使用时按下analog键"
+    },
+    "axis_stick_left__LR": 0,
+    "axis_stick_left__UD": 1,
+    "axis_stick_right_LR": 3,
+    "axis_stick_right_UD": 2,
+    "axis_cross_LR": 6,
+    "axis_cross_UD": 7,
+    "axis_LT": 2,
+    "axis_RT": 5,
+    "button_A": 0,
+    "button_B": 1,
+    "button_X": 2,
+    "button_Y": 3,
+    "button_LB": 4,
+    "button_RB": 5,
+    "button_select": 6,
+    "button_start": 7,
+    "button_stick__left": 8,
+    "button_stick_right": 9
+}
