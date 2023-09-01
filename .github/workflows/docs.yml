@@ -17,8 +17,9 @@ jobs:
         with:
           ssh-key: ${{ secrets.ID_MOBILE_ROBOT_CORE }}
           submodules: true  # Fetch private submodules
+          
 
-      - name: remove core docs  
+      - name: remove core docs
         run: rm -rf core/docs/core
           
       - name: Contribute List 
