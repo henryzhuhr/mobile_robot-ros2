@@ -1,5 +1,15 @@
 # 移动机器人
 
+## 项目简介
+
+涉及技术栈: 
+- 语言层: Python3, C++
+- 框架: ROS2, PyTorch,  TensorRT
+- 库: OpenCV, TensorRT, MQTT, RTMP
+- 软件包管理: CMake
+- 软件开发相关: Git, Github Actions, VSCode, Docker
+
+
 ## 环境配置
 ```shell
 git clone git@github.com:HenryZhuHR/mobile_robot-ros2.git
@@ -22,9 +32,17 @@ git submodule update core
 bash scripts/env/init-py-env.sh
 ```
 
+## 项目文档
 
-## 贡献者
+拥有开发权限的开发者可以在本地查看完整文档: 
+```shell
+yarn
+yarn docs:dev
+```
 
-<a href="https://github.com/eryajf/learn-github/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=eryajf/learn-github" />
-</a>
+对于公开文档，查看 [文档](https://henryzhuhr.github.io/mobile_robot-ros2/)
+
+
+## 开发贡献
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
