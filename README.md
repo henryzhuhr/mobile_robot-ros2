@@ -4,10 +4,13 @@
 
 涉及技术栈: 
 - 语言层: Python3, C++
-- 框架: ROS2, PyTorch,  TensorRT
-- 库: OpenCV, TensorRT, MQTT, RTMP
+- 操作系统: ROS2 
+- 深度学习框架: PyTorch, TensorRT, OpenVINO
+- 界面框架: Qt, Web(Vue3+Flask)
+- 库: OpenCV
+- 数据传输: MQTT, RTMP
 - 软件包管理: CMake
-- 软件开发相关: Git, Github Actions, VSCode, Docker
+- 软件开发相关: Git, VSCode, Github Actions, Docker
 
 
 ## 环境配置
@@ -16,7 +19,7 @@ git clone git@github.com:HenryZhuHR/mobile_robot-ros2.git
 cd mobile_robot-ros2
 git checkout -b dev origin/dev
 ```
-> 使用 SSH 协议 clone，如果没有配置 SSH 密钥，参考 [Github 配置 SSH 密钥](https://henryzhuhr.github.io/program/git/github-ssh.html)
+> 使用 SSH 协议 clone，如果没有配置 SSH 密钥，参考 [Github 配置 SSH 密钥](https://henryzhuhr.github.io/program/ssh/ssh.md)
 
 如果有核心代码的开发权限，则获取核心代码
 ```shell
@@ -43,16 +46,3 @@ yarn docs:dev
 对于公开文档，查看 [文档](https://henryzhuhr.github.io/mobile_robot-ros2/)
 
 
-## 开发贡献
-<!-- readme: contributors -start -->
-<table>
-<tr>
-    <td align="center">
-        <a href="https://github.com/HenryZhuHR">
-            <img src="https://avatars.githubusercontent.com/u/38650110?v=4" width="100;" alt="HenryZhuHR"/>
-            <br />
-            <sub><b>HenryZhuHR</b></sub>
-        </a>
-    </td></tr>
-</table>
-<!-- readme: contributors -end -->
