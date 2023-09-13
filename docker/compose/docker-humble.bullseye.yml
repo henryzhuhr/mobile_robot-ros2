@@ -1,0 +1,22 @@
+version: "3"
+services:
+  ros:
+    build:                           # 构建自定义镜像
+      context: ../containers                          # 指定Dockerfile文件所在路径
+      dockerfile: Dockerfile.ros-desktop.humble.bullseye  # 指定Dockerfile文件名称
+    # image: 
+    #   "codercom/code-server:latest"
+    restart: always
+    container_name: ros2-humble  # 容器名
+    volumes:
+      - "../../:/project"
+    working_dir: /project
+    #   - "/home/lzq/project:/home/coder/project"
+    # ports:
+    #   - "18080:8080"
+    # environment:
+    #   TZ: Asia/Shanghai
+    #   CONTAIN_USER: coder
+    #   PASSWORD: "SHapp@2022"  # 连接密码
+    # user: "1002:1002"
+    

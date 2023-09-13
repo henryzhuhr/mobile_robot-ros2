@@ -23,8 +23,7 @@ git checkout -b dev origin/dev
 
 如果有核心代码的开发权限，则获取核心代码
 ```shell
-git submodule init
-git submodule update core
+git submodule update --init --recursive
 ```
 
 
@@ -44,5 +43,4 @@ yarn docs:dev
 ```
 
 对于公开文档，查看 [文档](https://henryzhuhr.github.io/mobile_robot-ros2/)
-
 
