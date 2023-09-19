@@ -1,0 +1,11 @@
+version: "3"
+services:
+  ros:
+    build:
+      context: ../containers 
+      dockerfile: Dockerfile.ros-humble-desktop.aarch64.jammy
+    restart: always
+    container_name: ros-humble-desktop.aarch64.jammy
+    volumes:
+      - "../../:/project"
+    working_dir: /project
