@@ -1,0 +1,13 @@
+version: "3"
+services:
+  ros:
+    build:
+      context: ../containers 
+      dockerfile: Dockerfile.ros-humble-base.arm64.darwin
+    restart: always
+    container_name: ros-humble-base.arm64.darwin
+    volumes:
+      - "../../:/project"
+    working_dir: /project
+    ports:
+      - "1022:22"

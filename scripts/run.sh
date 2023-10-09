@@ -13,6 +13,7 @@ rm -rf install build log
 
 source ~/.bashrc
 source /opt/ros/foxy/install/setup.bash
+source $CONDA_PREFIX/setup.zsh
 
 BUILD_LIST=(
     "interfaces" # 统一接口
