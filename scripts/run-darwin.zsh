@@ -49,7 +49,8 @@ for item in ${BUILD_LIST[@]}; do
     colcon build --packages-select ${item} \
         --symlink-install \
         --cmake-args \
-            -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     source install/setup.zsh
 done
 

@@ -1,24 +1,32 @@
 {
-    "python.autoComplete.extraPaths": [
-        "install/interfaces/lib/python3.8/site-packages",
-        "install/state_interfaces/lib/python3.8/site-packages",
-        "modules/common/system_state_py",
-        "modules/common/base_node_py/base_node",
-        "/opt/ros/galactic/lib/python3.8/site-packages",
-        "/opt/ros/humble/lib/python3.10/site-packages"
-    ],
-    "python.analysis.extraPaths": [
-        "install/interfaces/lib/python3.8/site-packages",
-        "install/state_interfaces/lib/python3.8/site-packages",
-        "modules/common/system_state_py",
-        "modules/common/base_node_py/base_node",
-        "/opt/ros/galactic/lib/python3.8/site-packages",
-        "/opt/ros/humble/lib/python3.10/site-packages"
-        
+    "clangd.arguments": [
+        "--background-index",
+        "--compile-commands-dir=build",
+        "--query-driver=/usr/bin/clang++",
+        "-j=8",
+        "--clang-tidy",
+        "--all-scopes-completion",
+        "--completion-style=detailed",
     ],
     "ros.distro": "humble",
-    "clangd.arguments": [
-        "--compile-commands-dir=${workspaceFolder}/build",
-        "--query-driver=/usr/bin/clang,/usr/bin/c++",
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "install/interfaces/lib/python3.10/site-packages",
+        "install/state_interfaces/lib/python3.10/site-packages",
+        "core/manager/system_state_py/system_manager",
+        "core/base/base_node_py/base_node",
+        "modules/common/system_state_py"
     ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "install/interfaces/lib/python3.10/site-packages",
+        "install/state_interfaces/lib/python3.10/site-packages",
+        "core/manager/system_state_py/system_manager",
+        "core/base/base_node_py/base_node",
+        "modules/common/system_state_py",
+    ],
+    "files.associations": {
+        "string": "cpp"
+    },
+    "cmake.configureOnOpen": true,
 }

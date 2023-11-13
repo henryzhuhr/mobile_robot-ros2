@@ -1,41 +1,6 @@
 {
     "configurations": [
         {
-            "name": "ROS2_Darwin",
-            "browse": {
-                "databaseFilename": "${default}",
-                "limitSymbolsToIncludedHeaders": false
-            },
-            "includePath": [
-                // ROS 不同版本的路径不一样 
-                // "/opt/ros/humble/include/**",
-                "/Users/henryzhu/mambaforge/envs/ros2_humble/include",
-                // 第三方库
-                "/usr/include/opencv4",
-                "libs/jsoncpp/include",
-                // 接口头文件
-                // "install/state_interfaces/include/state_interfaces",
-                "install/state_interfaces/include",
-                // 
-                "modules/common/system_state/include",
-                "modules/common/base_node/include",
-                //
-                "core/controller/motion_controller/serial/include",
-                "core/controller/motion_controller/include",
-                //
-                "core/manager/system_manager/include",
-                //
-                "modules/video_streamer_cpp/include"
-            ],
-            "defines": [
-                "DEBUG"
-            ],
-            "intelliSenseMode": "linux-gcc-x64",
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu11",
-            "cppStandard": "c++14"
-        },
-        {
             "name": "ROS",
             "browse": {
                 "databaseFilename": "${default}",
@@ -43,32 +8,28 @@
             },
             "includePath": [
                 // ROS 不同版本的路径不一样 
-                // "/opt/ros/humble/include/**",
-                "/opt/ros/galactic/include/",
+                "/opt/ros/humble/include/**",
                 // 第三方库
-                "/usr/include/opencv4",
+                // "/usr/include/opencv4",
                 "libs/jsoncpp/include",
                 // 接口头文件
-                // "install/state_interfaces/include/state_interfaces",
-                "install/state_interfaces/include",
+                "install/state_interfaces/include/state_interfaces",
                 // 
-                "modules/common/system_state/include",
-                "modules/common/base_node/include",
-                //
-                "core/controller/motion_controller/serial/include",
                 "core/controller/motion_controller/include",
-                //
                 "core/manager/system_manager/include",
+                "core/base/base_node/include",
                 //
-                "modules/video_streamer_cpp/include"
+                "modules/video_streamer_cpp/include",
+                "modules/common/system_state/include"
             ],
             "defines": [
                 "DEBUG"
             ],
-            "intelliSenseMode": "linux-gcc-x64",
+            "intelliSenseMode": "gcc-arm64",
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu11",
-            "cppStandard": "c++14"
+            "cppStandard": "c++14",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
         }
     ],
     "version": 4
