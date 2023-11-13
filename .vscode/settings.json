@@ -25,8 +25,4 @@
         "core/base/base_node_py/base_node",
         "modules/common/system_state_py",
     ],
-    "files.associations": {
-        "string": "cpp"
-    },
-    "cmake.configureOnOpen": true,
 }
