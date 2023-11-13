@@ -11,7 +11,7 @@ export WORKSPACE=$PWD
 echo "work dir ${WORKSPACE}"
 cd $WORKSPACE
 
-# rm -rf build install log
+rm -rf build install log
 
 export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKSPACE/libs/jsoncpp/"
 # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$WORKSPACE/libs/paho-mqtt/lib/cmake/eclipse-paho-mqtt-c"
@@ -43,7 +43,7 @@ BUILD_LIST=(
     
     # 系统控制
 
-    # system_manager # 系统管理
+    system_manager # 系统管理
     # motion_manager # 运动控制管理(包括底层数据收集)
 
     # dt_mqtt_py # 数据传输
@@ -55,7 +55,7 @@ BUILD_LIST=(
     # sensor_uwb_py     # uwb 数据采集功能
     # vision_lanedet_py     # 视觉 车道线检测
     # controller_py
-    roslaunch
+    # roslaunch
 )
 for item in ${BUILD_LIST[@]}; do
     echo ""
@@ -63,7 +63,8 @@ for item in ${BUILD_LIST[@]}; do
     colcon build --packages-select ${item} \
         --symlink-install \
         --cmake-args \
-            -DCMAKE_BUILD_TYPE=Debug
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_STANDARD=17
     source install/setup.bash
 done
 
@@ -71,7 +72,7 @@ done
 ext_python_path=$(python -c 'import site; print(":".join(site.getsitepackages()))')
 export PYTHONPATH=$PYTHONPATH:$ext_python_path
 
-source install/setup.bash
+# source install/setup.bash
 
 # ros2 launch py_launch car.launch.py
 # ros2 run system_manager system_manager

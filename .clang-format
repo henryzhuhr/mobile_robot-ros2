@@ -79,7 +79,7 @@ BraceWrapping:
   AfterStruct:     false
   AfterUnion:      false
   BeforeCatch:     false
-  BeforeElse:      false
+  BeforeElse:      true
   IndentBraces:    false
   SplitEmptyFunction: true
   SplitEmptyRecord: true
@@ -97,7 +97,7 @@ BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
 
 # === 每行字符的限制，0表示没有限制 ===
-# ColumnLimit:     200
+ColumnLimit:     120
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
 
