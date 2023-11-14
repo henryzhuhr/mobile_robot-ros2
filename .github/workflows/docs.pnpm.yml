@@ -14,13 +14,13 @@ jobs:
       - name: Checkout this
         # @see https://github.com/actions/checkout
         uses: actions/checkout@v3
-        with:
-          ssh-key: ${{ secrets.ID_MOBILE_ROBOT_CORE }}
-          submodules: true  # Fetch private submodules
+        # with:
+        #   ssh-key: ${{ secrets.ID_MOBILE_ROBOT_CORE }}
+        #   submodules: true  # Fetch private submodules
           
 
-      - name: remove core docs
-        run: rm -rf core/docs/core
+      # - name: remove core docs
+      #   run: rm -rf core/docs/core
           
       - name: Contribute List 
         # @see https://github.com/marketplace/actions/contribute-list
@@ -36,12 +36,14 @@ jobs:
           node-version: 16.x
 
       - name: Run install
-        uses: borales/actions-yarn@v4
+        # @see https://github.com/marketplace/actions/setup-pnpm
+        uses: pnpm/action-setup@v2
         with:
-          cmd: install # will run `yarn install` command
-
-      - name: Build VuePress site
-        run: yarn docs:build
+          version: 8
+          run_install: |
+            - recursive: true
+              args: [--frozen-lockfile, --strict-peer-dependencies]
+            - args: [--global, gulp, prettier, typescript]
 
       - name: Deploy to GitHub Pages
         # @see https://github.com/crazy-max/ghaction-github-pages
@@ -50,7 +52,7 @@ jobs:
           # 部署到 docs 分支
           target_branch: docs
           # 部署目录为 VuePress 的默认输出目录
-          build_dir: core/docs/.vuepress/dist
+          build_dir: docs/.vuepress/dist
         env:
           # @see https://docs.github.com/cn/actions/reference/authentication-in-a-workflow#about-the-github_token-secret
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
