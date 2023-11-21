@@ -1,0 +1,19 @@
+# https://github.com/dusty-nv/jetson-containers/blob/master/packages/ros/README.md
+FROM dustynv/ros:humble-desktop-l4t-r35.4.1
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+
+ADD . /root/mobile_robot
+
+WORKDIR /root/mobile_robot
+
+RUN apt-get update
+# RUN apt-get upgrade -y
+# RUN apt-get install -y --no-install-recommends \
+#     python3.8-venv
+
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install -r requirements.txt
+
+RUN source /opt/ros/humble/install/setup.bash
