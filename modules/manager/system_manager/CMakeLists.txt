@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.8)
+project(system_manager)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -O0")
+  add_compile_definitions(DEBUG)
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
+endif()
+
+# find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
+find_package(state_interfaces REQUIRED)
+find_package(system_state REQUIRED)
+find_package(jsoncpp REQUIRED)
+
+
+include_directories(${system_state_INCLUDE_DIRS}/include) # install/system_state/include/include 被嵌套了一层
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${JSON_INC_PATH})
+
+# [Node] system_manager : 编译 链接 添加ros依赖 安装
+set(NODE_NAME system_manager_node)
+add_executable(${NODE_NAME} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/config_parse.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/system_manager.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/app/system_manager_node.cpp
+)
+target_link_libraries(${NODE_NAME} jsoncpp_lib)
+ament_target_dependencies(${NODE_NAME} rclcpp std_msgs state_interfaces)
+install(TARGETS ${NODE_NAME}  DESTINATION lib/${PROJECT_NAME})
+
+
+# [Node] test_system_manager : 编译 链接 添加ros依赖 安装
+set(NODE_NAME test_system_manager)
+add_executable(${NODE_NAME} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/test_system_manager.cpp
+)
+ament_target_dependencies(${NODE_NAME} rclcpp std_msgs state_interfaces)
+install(TARGETS ${NODE_NAME}  DESTINATION lib/${PROJECT_NAME})
+
+ament_package()
